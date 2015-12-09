@@ -40,7 +40,7 @@ $border-radius-base:        $radius;
 // ==========================================================================
 // Tables
 // ==========================================================================
-$table-cell-padding:            rem(15px);
+// $table-cell-padding:            rem(15px);
 $table-bg-accent:               $charcoal-lightblue;
 $table-bg-hover:                $charcoal-lightblue;
 
@@ -75,14 +75,14 @@ $btn-border-radius-small:        $border-radius-base;
 // Forms
 // ==========================================================================
 $input-color:                    $color;
-
+$input-border: $input-border-color;
 $input-border-focus:             $blue;
 
-$input-height-base:              48px;
-$input-height-small:             38px;
+// $input-height-base:              48px;
+// $input-height-small:             38px;
 
-$form-group-margin-bottom:       15px;
+// $form-group-margin-bottom:       15px;
 
 // Grid system
 // ==========================================================================
-$grid-gutter-width:         15px;
+// $grid-gutter-width:         15px;
