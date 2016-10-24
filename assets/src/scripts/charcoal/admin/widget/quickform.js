@@ -26,12 +26,16 @@ Charcoal.Admin.Widget_Quick_Form.prototype.init = function () {
 };
 
 Charcoal.Admin.Widget_Quick_Form.prototype.bind_events = function () {
-    var that = this;
-    $(document).on('submit', '#' + this.id(), function (e) {
+    var that = this,
+        form  = '#' + this.id(),
+        $form = $(form);
+
+    $(document).on('submit', form, function (e) {
         e.preventDefault();
         that.submit_form(this);
     });
-    $('#' + this.id()).on(
+
+    $form.on(
         'click.charcoal.bs.dialog',
         '[data-dismiss="dialog"]',
         function (event) {
@@ -40,6 +44,10 @@ Charcoal.Admin.Widget_Quick_Form.prototype.bind_events = function () {
             }
         }
     );
+
+    $('.form-control:input', $form).on('invalid', function (event) {
+        console.log('Invalid!', event);
+    });
 };
 
 Charcoal.Admin.Widget_Quick_Form.prototype.submit_form = function (form) {

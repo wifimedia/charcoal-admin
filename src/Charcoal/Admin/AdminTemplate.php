@@ -20,6 +20,7 @@ use \Charcoal\User\Authorizer;
 
 // From 'charcoal-translation'
 use \Charcoal\Translation\TranslationString;
+use \Charcoal\Translation\TranslationConfig;
 
 // From 'charcoal-app'
 use \Charcoal\App\Template\AbstractTemplate;
@@ -94,6 +95,11 @@ class AdminTemplate extends AbstractTemplate
      * @var array $feedbacks
      */
     private $feedbacks;
+
+    /**
+     * @var array $languages
+     */
+    private $languages;
 
     /**
      * @var \Charcoal\App\App $app
@@ -584,6 +590,51 @@ class AdminTemplate extends AbstractTemplate
     public function baseUrl()
     {
         return rtrim($this->baseUrl, '/').'/';
+    }
+
+    /**
+     * Retrieve the object's current language identifier.
+     *
+     * @return string A language identifier.
+     */
+    public function currentLanguage()
+    {
+        return TranslationConfig::instance()->currentLanguage();
+    }
+
+    /**
+     * Retrieve the object's list of available language identifiers.
+     *
+     * @return array An array of available language identifiers
+     */
+    public function languages()
+    {
+        if ($this->languages === null) {
+            $languages = TranslationConfig::instance()->availableLanguages();
+            $languages = array_flip($languages);
+
+            array_walk(
+                $languages,
+                function (&$item, $langCode) {
+                    $item = [
+                        'ident'   => $langCode,
+                        'isFirst' => false,
+                        'isLast'  => false
+                    ];
+                }
+            );
+
+            $keys = array_keys($languages);
+
+            if (!empty($keys)) {
+                $languages[reset($keys)]['isFirst'] = true;
+                $languages[end($keys)]['isLast']    = true;
+            }
+
+            $this->languages = new \ArrayIterator($languages);
+        }
+
+        return $this->languages;
     }
 
     /**

@@ -4,6 +4,21 @@
 
 .nav-tabs {
     margin-bottom: rem(40px);
+
+    > li {
+        // Feedback states
+        &.has-success {
+            @include tab-feedback($state-success-text, $state-success-text, $state-success-bg);
+        }
+
+        &.has-warning {
+            @include tab-feedback($state-warning-text, $state-warning-text, $state-warning-bg);
+        }
+
+        &.has-error {
+            @include tab-feedback($state-danger-text, $state-danger-text, $state-danger-bg);
+        }
+    }
 }
 
 .nav-tabs > li a {

@@ -12,7 +12,7 @@ Based on the HTML5 boilerplate.
 {{# addJsRequirement }}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 {{/ addJsRequirement }}<!doctype html>
-<html lang="{{currentLanguage}}">
+<html lang="{{currentLanguage}}" data-locale="{{currentLanguage}}">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -29,10 +29,17 @@ Based on the HTML5 boilerplate.
     <link rel="apple-touch-icon" href="{{baseUrl}}assets/admin/images/apple-touch-icon.png">
     <link rel="icon" href="{{baseUrl}}assets/admin/images/favicon.png">
 
-    <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,500,700,400italic' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,500,700,400italic" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <link href="{{baseUrl}}assets/admin/styles/charcoal.admin.vendors.css" rel="stylesheet" type="text/css">
     <link href="{{baseUrl}}assets/admin/styles/charcoal.admin.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+        {{# languages }}[data-locale="{{ident}}"] [data-lang]:not([data-lang="{{ident}}"]){{^ isLast }},
+        {{/ isLast }}{{/ languages }} {
+            display:    none   !important;
+            visibility: hidden !important;
+        }
+    </style>
 </head>
 <body {{#showHeaderMenu}}class="has-nav-main"{{/showHeaderMenu}}>
 

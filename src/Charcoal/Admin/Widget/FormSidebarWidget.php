@@ -365,6 +365,53 @@ class FormSidebarWidget extends AdminWidget implements
     }
 
     /**
+     * Determine if the object supports more than one available language.
+     *
+     * @return boolean Whether the object is multilingual (TRUE) or unilingual (FALSE).
+     */
+    public function isMultilingual()
+    {
+        return TranslationConfig::instance()->isMultilingual();
+    }
+
+    /**
+     * Determine if the object supports two languages.
+     *
+     * @return boolean
+     */
+    public function isBilingual()
+    {
+        return TranslationConfig::instance()->isBilingual();
+    }
+
+    /**
+     * Determine if the object supports more than two available language.
+     *
+     * @return boolean
+     */
+    public function isPlurilingual()
+    {
+        return TranslationConfig::instance()->isPlurilingual();
+    }
+
+    /**
+     * Retrieve the object's current language identifier.
+     *
+     * @return string A language identifier.
+     */
+    public function currentLanguage()
+    {
+        $trans = TranslationConfig::instance();
+        $lang  = $trans->language($trans->currentLanguage());
+
+        return [
+            'ident'   => $lang->ident(),
+            'name'    => $lang->name(),
+            'current' => true
+        ];
+    }
+
+    /**
      * Retrieve the available languages, formatted for the sidebar language-switcher.
      *
      * @return array|Generator

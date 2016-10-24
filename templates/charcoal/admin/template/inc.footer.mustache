@@ -28,6 +28,17 @@
             $('[data-toggle="tooltip"]').tooltip();
         });
 
+        hyperform(window, {
+            revalidate: 'onsubmit',
+            valid_event: true,
+            classes: {
+                warning:   'help-block',
+                invalid:   'is-invalid',
+                valid:     'is-valid',
+                validated: 'is-validated'
+            }
+        });
+
         // Initialize bootstrap-select globally
         $('.selectpicker').selectpicker({});
     </script>

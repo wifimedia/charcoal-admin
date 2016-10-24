@@ -52,6 +52,9 @@ body {
   color: #ffffff;
   text-shadow: none; }
 
+button * {
+  pointer-events: none; }
+
 th {
   font-weight: 700; }
 
@@ -949,6 +952,19 @@ td {
   .c-aside {
     width: 21.25rem; } }
 
+.c-toggle_lang {
+  position: relative;
+  margin-bottom: 15px; }
+  .c-toggle_lang .btn.dropdown-toggle {
+    text-align: left; }
+    .c-toggle_lang .btn.dropdown-toggle .caret {
+      position: absolute;
+      display: inline-block;
+      right: 15px;
+      margin-top: 6px; }
+  .c-toggle_lang .dropdown-menu {
+    width: 100%; }
+
 .c-login {
   position: absolute;
   top: 0;
@@ -1390,6 +1406,12 @@ ul.c-panel_table {
   .radio-color.input-sm input[type='radio']:checked + .o-color-swatch::after {
     border-radius: 3px; }
 
+.badge {
+  padding: .3em .6em .2em; }
+
+small.badge {
+  font-size: 10px; }
+
 .badge-default {
   background-color: #777777; }
   .badge-default[href]:hover, .badge-default[href]:focus {
@@ -1420,8 +1442,76 @@ ul.c-panel_table {
   .badge-danger[href]:hover, .badge-danger[href]:focus {
     background-color: #c9302c; }
 
+.btn-default .badge-primary {
+  background-color: #337ab7; }
+  .btn-default .badge-primary[href]:hover, .btn-default .badge-primary[href]:focus {
+    background-color: #286090; }
+
+.btn-default .badge-success {
+  background-color: #5cb85c; }
+  .btn-default .badge-success[href]:hover, .btn-default .badge-success[href]:focus {
+    background-color: #449d44; }
+
+.btn-default .badge-info {
+  background-color: #5bc0de; }
+  .btn-default .badge-info[href]:hover, .btn-default .badge-info[href]:focus {
+    background-color: #31b0d5; }
+
+.btn-default .badge-warning {
+  background-color: #f0ad4e; }
+  .btn-default .badge-warning[href]:hover, .btn-default .badge-warning[href]:focus {
+    background-color: #ec971f; }
+
+.btn-default .badge-danger {
+  background-color: #d9534f; }
+  .btn-default .badge-danger[href]:hover, .btn-default .badge-danger[href]:focus {
+    background-color: #c9302c; }
+
+.label {
+  padding: .2em .5em;
+  vertical-align: middle; }
+
+small.label {
+  font-size: 10px; }
+
 .nav-tabs {
   margin-bottom: 2.5rem; }
+  .nav-tabs > li.has-success > a {
+    color: #3c763d; }
+    .nav-tabs > li.has-success > a:hover {
+      background-color: #dff0d8;
+      border-color: #dff0d8 #dff0d8 #ddd; }
+  .nav-tabs > li.has-success.active > a, .nav-tabs > li.has-success.active > a:hover, .nav-tabs > li.has-success.active > a:focus {
+    background-color: #fff;
+    border-top-width: 3px;
+    border-top-color: #3c763d;
+    border-bottom-color: transparent;
+    padding-top: 8px;
+    color: #3c763d; }
+  .nav-tabs > li.has-warning > a {
+    color: #8a6d3b; }
+    .nav-tabs > li.has-warning > a:hover {
+      background-color: #fcf8e3;
+      border-color: #fcf8e3 #fcf8e3 #ddd; }
+  .nav-tabs > li.has-warning.active > a, .nav-tabs > li.has-warning.active > a:hover, .nav-tabs > li.has-warning.active > a:focus {
+    background-color: #fff;
+    border-top-width: 3px;
+    border-top-color: #8a6d3b;
+    border-bottom-color: transparent;
+    padding-top: 8px;
+    color: #8a6d3b; }
+  .nav-tabs > li.has-error > a {
+    color: #a94442; }
+    .nav-tabs > li.has-error > a:hover {
+      background-color: #f2dede;
+      border-color: #f2dede #f2dede #ddd; }
+  .nav-tabs > li.has-error.active > a, .nav-tabs > li.has-error.active > a:hover, .nav-tabs > li.has-error.active > a:focus {
+    background-color: #fff;
+    border-top-width: 3px;
+    border-top-color: #a94442;
+    border-bottom-color: transparent;
+    padding-top: 8px;
+    color: #a94442; }
 
 .nav-tabs > li a {
   position: relative; }
@@ -1519,6 +1609,8 @@ input[type="url"] {
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase; }
+  .active-lang [data-lang].is-invalid {
+    color: #a94442; }
 
 .table > thead > tr > th,
 .table > thead > tr > td,
@@ -1739,6 +1831,9 @@ a:focus {
 
 .bootstrap-dialog .form-field.form-property-file[data-lang]::before, .bootstrap-dialog .form-field.form-property-image[data-lang]::before {
   line-height: 32px; }
+
+.bootstrap-select.btn-group > .btn.dropdown-toggle {
+  float: none; }
 
 .o-color-swatch {
   cursor: text;

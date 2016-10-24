@@ -6,3 +6,23 @@
         width: rem($nav);
     }
 }
+
+.c-toggle_lang {
+    position: relative;
+    margin-bottom: $form-group-margin-bottom;
+
+    .btn.dropdown-toggle {
+        text-align: left;
+
+        .caret {
+            position:   absolute;
+            display:    inline-block;
+            right:      $padding-base-horizontal + 3px;
+            margin-top: $padding-base-vertical;
+        }
+    }
+
+    .dropdown-menu {
+        width: 100%;
+    }
+}

@@ -38,6 +38,10 @@ body {
     text-shadow: none;
 }
 
+button * {
+    pointer-events: none;
+}
+
 th {
     font-weight: $weight-bold;
 }

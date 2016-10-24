@@ -1,8 +1,12 @@
 // ==========================================================================
-// Tab focus
+// Labels
 // ==========================================================================
 
-@mixin tab-focus() {
-    outline: 0;
-    border-color: $blue;
+.label {
+    padding: .2em .5em;
+    vertical-align: middle;
+}
+
+small.label {
+    font-size: $font-size-mini;
 }

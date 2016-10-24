@@ -237,11 +237,6 @@ abstract class AbstractPropertyInput implements
      */
     public function hidden()
     {
-        if ($this->p()->l10n()) {
-            if ($this->lang() != TranslationConfig::instance()->currentLanguage()) {
-                return true;
-            }
-        }
         return false;
     }
 

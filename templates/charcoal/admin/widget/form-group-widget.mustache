@@ -46,9 +46,9 @@ This widget expects a `Charcoal\Admin\Widget\FormGroup` model as context.
                     <label class="control-label" for="{{ prop.inputId }}">{{ prop.label }}{{# prop.required }} <span class="text-danger">*</span>{{/ prop.required }}</label>
 
                     {{# l10n }}
-                    <span class="active-lang pull-right">
+                    <span class="active-lang pull-right" role="presentation">
                         {{# languages }}
-                        <span aria-label="{{ name }}" data-lang="{{ ident }}"{{^ current }} class=" hidden"{{/ current }}>{{ ident }}</span>
+                        <span aria-label="{{ name }}" data-lang="{{ ident }}">{{ ident }}</span>
                         {{/ languages }}
                     </span>
                     {{/ l10n }}

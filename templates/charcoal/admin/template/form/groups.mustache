@@ -11,7 +11,7 @@
     {{> charcoal/admin/widget/layout.start }}
     {{/ form.layout }}
 
-    <div id="form_group_{{ widgetId }}" class="o-form-group{{# ident }} form-group-{{ . }}{{/ ident }}{{# form.layout.cellSpanBy12 }} col-md-{{ . }}{{/ form.layout.cellSpanBy12 }} js-group-tab{{# isTabbable }} tab-pane{{^ isHidden }} active{{/ isHidden }}{{/ isTabbable }}{{^ isTabbable }}{{# isHidden }} hidden{{/ isHidden }}{{/ isTabbable }}">
+    <div{{# isTabbable }} role="tabpanel"{{/ isTabbable }} id="form_group_{{ widgetId }}" class="o-form-group{{# ident }} form-group-{{ . }}{{/ ident }}{{# form.layout.cellSpanBy12 }} col-md-{{ . }}{{/ form.layout.cellSpanBy12 }} js-group-tab{{# isTabbable }} tab-pane{{^ isHidden }} active{{/ isHidden }}{{/ isTabbable }}{{^ isTabbable }}{{# isHidden }} hidden{{/ isHidden }}{{/ isTabbable }}">
         {{> $widget_template }}
     </div>
 

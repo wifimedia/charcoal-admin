@@ -12,12 +12,38 @@
                 {{/subtitle}}
 
                 {{#showLanguageSwitch}}
-                <div class="btn-group btn-group-justified form-group js-lang-switch" role="group" aria-label="{{#_t}}Language switcher{{/_t}}">
-                    {{#languages}}
-                    <div class="btn-group" role="group">
-                        <button type="button" data-lang-switch="{{ident}}" class="btn{{#current}} btn-info{{/current}}{{^current}} btn-default{{/current}}">{{name}}</button>
+                <div class="c-toggle_lang{{#isPlurilingual}} -dropdown{{/isPlurilingual}} js-lang-switch" role="group" aria-label="{{#_t}}Language switcher{{/_t}}">
+                    {{#isBilingual}}
+                    <div class="btn-group btn-group-justified">
+                        {{#languages}}
+                        <a href="#" role="button" data-lang-switch="{{ident}}" class="btn{{#current}} btn-info{{/current}}{{^current}} btn-default{{/current}}">
+                            <span class="btn-label">{{name}}</span>
+                            <small class="badge"></small>
+                        </a>
+                        {{/languages}}
                     </div>
+                    {{/isBilingual}}
+                    {{#isPlurilingual}}
+                    {{#currentLanguage}}
+                    <button type="button" class="btn btn-default btn-block dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="dropdown-label">
+                            <span class="btn-label">{{name}}</span>
+                            <small class="badge"></small>
+                        </span>
+                        <span class="caret"></span>
+                    {{/currentLanguage}}
+                    </button>
+                    <ul class="dropdown-menu">
+                    {{#languages}}
+                        <li{{#current}} class="active"{{/current}}>
+                            <a href="#" role="button" data-lang-switch="{{ident}}">
+                                <span class="btn-label">{{name}}</span>
+                                <small class="badge"></small>
+                            </a>
+                        </li>
                     {{/languages}}
+                    </ul>
+                    {{/isPlurilingual}}
                 </div>
                 {{/showLanguageSwitch}}
 
