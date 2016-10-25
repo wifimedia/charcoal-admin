@@ -4,29 +4,29 @@ namespace Charcoal\Admin;
 
 use \Pimple\Container;
 
-// Module `charcoal-factory` dependencies
+// From 'charcoal-factory'
 use \Charcoal\Factory\FactoryInterface;
 
-// Module `charcoal-app` dependencies
+// From 'charcoal-app'
 use Charcoal\App\Action\AbstractAction;
+
+// From 'charcoal-admin'
+use \Charcoal\Admin\Ui\FeedbackAwareInterface;
+use \Charcoal\Admin\Ui\FeedbackAwareTrait;
 
 /**
  * The base class for the `admin` Actions.
- *
  */
-abstract class AdminAction extends AbstractAction
+abstract class AdminAction extends AbstractAction implements FeedbackAwareInterface
 {
+    use FeedbackAwareTrait;
+
     /**
      * Store a reference to the admin configuration.
      *
      * @var \Charcoal\Admin\Config
      */
     protected $adminConfig;
-
-    /**
-     * @var array $feedbacks
-     */
-    private $feedbacks = [];
 
     /**
      * @var FactoryInterface $modelFactory
@@ -105,45 +105,6 @@ abstract class AdminAction extends AbstractAction
         if ($u === null || !$u->id()) {
             die('Auth required');
         }
-    }
-
-    /**
-     * @return boolean
-     */
-    public function hasFeedbacks()
-    {
-        return (count($this->feedbacks()) > 0);
-    }
-
-    /**
-     * @return integer
-     */
-    public function numFeedbacks()
-    {
-        return count($this->feedbacks());
-    }
-
-    /**
-     * @return array
-     */
-    public function feedbacks()
-    {
-        return $this->feedbacks;
-    }
-
-    /**
-     * @param string $level The feedback level.
-     * @param mixed  $msg   The actual feedback message.
-     * @return AdminAction Chainable
-     */
-    public function addFeedback($level, $msg)
-    {
-        $this->feedbacks[] = [
-            'msg'     => $msg,
-            'message' => $msg,
-            'level'   => $level
-        ];
-        return $this;
     }
 
     /**

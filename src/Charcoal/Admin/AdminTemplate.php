@@ -25,6 +25,10 @@ use \Charcoal\Translation\TranslationConfig;
 // From 'charcoal-app'
 use \Charcoal\App\Template\AbstractTemplate;
 
+// From 'charcoal-admin'
+use \Charcoal\Admin\Ui\FeedbackAwareInterface;
+use \Charcoal\Admin\Ui\FeedbackAwareTrait;
+
 /**
  * Base class for all `admin` Templates.
  *
@@ -40,8 +44,10 @@ use \Charcoal\App\Template\AbstractTemplate;
  * - `hasFeedback` (bool) - If there is feedback to display or not
  * - `feedback` (iterator) - The feedback data
  */
-class AdminTemplate extends AbstractTemplate
+class AdminTemplate extends AbstractTemplate implements FeedbackAwareInterface
 {
+    use FeedbackAwareTrait;
+
     /**
      * The base URI.
      *
@@ -90,11 +96,6 @@ class AdminTemplate extends AbstractTemplate
      * @var boolean $headerMenu
      */
     private $headerMenu;
-
-    /**
-     * @var array $feedbacks
-     */
-    private $feedbacks;
 
     /**
      * @var array $languages
@@ -497,37 +498,6 @@ class AdminTemplate extends AbstractTemplate
     public function footerMenu()
     {
         return [];
-    }
-
-    /**
-     * @return boolean
-     */
-    public function hasFeedbacks()
-    {
-        return (count($this->feedbacks()) > 0);
-    }
-
-    /**
-     * @return array
-     */
-    public function feedbacks()
-    {
-        return $this->feedbacks;
-    }
-
-    /**
-     * @param string $level The feedback level.
-     * @param mixed  $msg   The feedback message.
-     * @return AdminTemplate Chainable
-     */
-    public function addFeedback($level, $msg)
-    {
-        $this->feedbacks[] = [
-            'msg'     => $msg,
-            'message' => $msg,
-            'level'   => $level
-        ];
-        return $this;
     }
 
     /**

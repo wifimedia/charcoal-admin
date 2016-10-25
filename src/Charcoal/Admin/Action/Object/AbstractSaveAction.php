@@ -91,7 +91,7 @@ abstract class AbstractSaveAction extends AdminAction implements ObjectContainer
         if (is_string($filters) && in_array($filters, $levels)) {
             $results = call_user_func([ $validator, $filters.'Results' ]);
             foreach ($results as $result) {
-                $this->addFeedback($result->level(), $result->message());
+                $this->addFeedback($result->level(), $result->message(), $result->ident());
             }
 
             return $this;
@@ -107,7 +107,7 @@ abstract class AbstractSaveAction extends AdminAction implements ObjectContainer
         foreach ($validation as $level => $results) {
             if ($filters === null || in_array($level, $filters)) {
                 foreach ($results as $result) {
-                    $this->addFeedback($result->level(), $result->message());
+                    $this->addFeedback($result->level(), $result->message(), $result->ident());
                 }
             }
         }
