@@ -3,6 +3,7 @@
 namespace Charcoal\Admin;
 
 use Exception;
+use InvalidArgumentException;
 
 // From PSR-7 (HTTP Messaging)
 use Psr\Http\Message\UriInterface;
