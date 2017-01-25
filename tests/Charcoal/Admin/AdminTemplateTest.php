@@ -25,6 +25,7 @@ class AdminTemplateTest extends PHPUnit_Framework_TestCase
         $containerProvider->registerMetadataLoader($container);
         $containerProvider->registerAuthenticator($container);
         $containerProvider->registerAuthorizer($container);
+        $containerProvider->registerMotdLoader($container);
 
         $this->obj = $this->getMock(AdminTemplate::class, null, [[
             'logger' => $container['logger'],

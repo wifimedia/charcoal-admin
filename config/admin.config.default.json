@@ -13,6 +13,9 @@
             "logout": {
                 "ident": "charcoal/admin/template/logout"
             },
+            "motd": {
+                "ident": "charcoal/admin/template/motd"
+            },
             "account/lost-password":{
                 "ident": "charcoal/admin/template/account/lost-password"
             },
@@ -44,6 +47,9 @@
         "actions": {
             "login": {
                 "ident": "charcoal/admin/action/login"
+            },
+            "read-motd":{
+                "ident": "charcoal/admin/action/read-motd"
             },
             "account/lost-password":{
                 "ident": "charcoal/admin/action/account/lost-password"

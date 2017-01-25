@@ -1,0 +1,31 @@
+{
+    "properties":{
+        "ident":{
+            "type":"string",
+            "unique":true
+        },
+        "title":{
+            "type":"string",
+            "l10n":true
+        },
+        "content":{
+            "type":"html",
+            "l10n":true
+        },
+        "publish_date":{
+            "type":"date-time"
+        },
+        "expiry_date":{
+            "type":"date-time"
+        }
+    },
+
+    "key":"ident",
+
+    "sources":{
+        "default":{
+            "table":"charcoal_admin_motd"
+        }
+    },
+    "default_source":"default"
+}

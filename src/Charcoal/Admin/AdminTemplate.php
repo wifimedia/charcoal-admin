@@ -76,54 +76,59 @@ class AdminTemplate extends AbstractTemplate implements AuthAwareInterface
     private $siteName;
 
     /**
-     * @var string $ident
+     * @var string
      */
     private $ident;
 
     /**
-     * @var TranslationString $label
+     * @var TranslationString
      */
     protected $label;
 
     /**
-     * @var TranslationString $title
+     * @var TranslationStrin
      */
     protected $title;
 
     /**
-     * @var TranslationString $subtitle
+     * @var TranslationString
      */
     protected $subtitle;
 
     /**
-     * @var boolean $showHeaderMenu
+     * @var boolean
      */
     private $showHeaderMenu = true;
 
     /**
-     * @var boolean $showFooterMenu
+     * @var boolean
      */
     private $showFooterMenu = true;
 
     /**
-     * @var boolean $showTopHeaderMenu
+     * @var boolean
      */
     private $showTopHeaderMenu;
 
     /**
-     * @var boolean $headerMenu
+     * @var boolean
      */
     private $headerMenu;
 
     /**
-     * @var array $feedbacks
+     * @var array
      */
     private $feedbacks;
 
     /**
-     * @var FactoryInterface $modelFactory
+     * @var FactoryInterface
      */
     private $modelFactory;
+
+    /**
+     * @var MessageOfTheDayLoader
+     */
+    protected $motdLoader;
 
     /**
      * Set common dependencies (services) used in all admin templates.
@@ -140,6 +145,7 @@ class AdminTemplate extends AbstractTemplate implements AuthAwareInterface
         $this->setBaseUrl($container['base-url']);
         $this->setSiteName($container['config']['project_name']);
         $this->setModelFactory($container['model/factory']);
+        $this->motdLoader = $container['admin/motd/loader'];
 
         // AuthAware dependencies
         $this->setAuthenticator($container['admin/authenticator']);
@@ -188,6 +194,7 @@ class AdminTemplate extends AbstractTemplate implements AuthAwareInterface
             // Initialize data with GET
             $this->setData($request->getParams());
         }
+
 
         return parent::init($request);
     }

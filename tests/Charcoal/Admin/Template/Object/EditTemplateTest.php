@@ -31,6 +31,7 @@ class EditTemplateTest extends PHPUnit_Framework_TestCase
         $containerProvider->registerAuthorizer($container);
         $containerProvider->registerWidgetFactory($container);
         $containerProvider->registerDashboardBuilder($container);
+        $containerProvider->registerMotdLoader($container);
 
         $this->obj = new EditTemplate([
             'logger' => $container['logger'],

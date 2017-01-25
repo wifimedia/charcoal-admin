@@ -33,6 +33,7 @@ class ElfinderTemplateTest extends PHPUnit_Framework_TestCase
         $containerProvider->registerAuthenticator($container);
         $containerProvider->registerAuthorizer($container);
         $containerProvider->registerElfinderConfig($container);
+        $containerProvider->registerMotdLoader($container);
 
         $this->obj = $this->getMock(ElfinderTemplate::class, null, [[
             'logger' => $container['logger'],

@@ -1,0 +1,78 @@
+{{!--
+motd
+--}}
+{{>charcoal/admin/template/inc.header}}
+
+<div class="o-flex">
+
+    {{#sidemenu}}
+        {{>$widget_template}}
+    {{/sidemenu}}
+
+    {{>charcoal/admin/widget/feedbacks}}
+
+    <div class="o-flex_main">
+        <div class="o-container -top -bottom clearfix">
+            <header class="o-container_header">
+                {{# title }}<h2>{{&.}}</h2>{{/ title }}
+                {{# subtitle }}<h3>{{&.}}</h3>{{/ subtitle }}
+            </header>
+
+            <p>
+                {{#_t}}Avant de continuer, veuillez d'abord prendre connaissance des messages suivants:{{/_t}}
+            </p>
+
+            <form method="post" action="" id="read-motd">
+            <div>
+            {{#motds}}
+                <div class="panel panel-{{level}}">
+                    <div class="panel-heading">
+                        <h4>{{title}}</h4>
+                    </div>
+                    <div class="panel-body">
+                        {{&content}}
+                    </div>
+                    {{#mustAccept}}
+                    <div class="panel-footer">
+                        <label>
+                            <input type="checkbox" name="accept[{{id}}]" value="1">
+                            {{#_t}}Je, <em>{{authUserName}}</em> (<em>{{authUserEmail}}</em>), en ce <em>{{authDateString}}</em>, affirme avoir lu et compris <em>"{{title}}"</em> ci-dessus.{{/_t}}
+                        </label>
+                    </div>
+                    {{/mustAccept}}
+                    {{^mustAccept}}
+                        <input type="hidden" name="read[{{id}}]">
+                    {{/mustAccept}}
+                </div>
+            {{/motds}}
+
+                <a class="btn btn-primary" id="read-motd-btn">{{#_t}}Continuer{{/_t}}</a>
+            </div>
+            </form>
+
+
+
+        </div>
+    </div>
+
+</div>
+
+{{#addJs}}
+<script>
+    $('#read-motd-btn').on('click', function(el) {
+        el.preventDefault();
+
+        var form = $(this).parents('form');
+        var url = Charcoal.Admin.admin_url() + 'read-motd';
+        var data = form.serialize();
+        window.console.debug(data);
+        $.post(url, data, function (response) {
+            window.console.debug(response);
+        });
+
+    });
+
+</script>
+{{/addJs}}
+
+{{>charcoal/admin/template/inc.footer}}

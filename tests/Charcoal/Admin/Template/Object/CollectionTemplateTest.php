@@ -35,6 +35,7 @@ class CollectionTemplateTest extends PHPUnit_Framework_TestCase
         $containerProvider->registerWidgetFactory($container);
         $containerProvider->registerDashboardBuilder($container);
         $containerProvider->registerCollectionLoader($container);
+        $containerProvider->registerMotdLoader($container);
 
         $this->obj = $this->getMock(CollectionTemplate::class, null, [[
             'logger' => $container['logger'],

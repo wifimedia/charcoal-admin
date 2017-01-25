@@ -8,6 +8,8 @@ use \Charcoal\Admin\Widget\SearchWidget;
 
 class SearchWidgetTest extends \PHPUnit_Framework_TestCase
 {
+    private $obj;
+
     public function setUp()
     {
         $logger = new NullLogger();

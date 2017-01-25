@@ -1,0 +1,37 @@
+{
+    "properties":{
+        "id":{
+            "type":"id",
+            "mode":"uniqid"
+        },
+        "action":{
+            "type":"string"
+        },
+        "motd":{
+            "type":"object",
+            "obj_type":"charcoal/admin/object/message-of-the-day",
+            "allow_null":false
+        },
+        "user":{
+            "type":"object",
+            "obj_type":"charcoal/admin/user",
+            "allow_null":false
+        },
+        "ts":{
+            "type":"date-time"
+        },
+        "ip":{
+            "type":"ip"
+        },
+        "session_id":{
+            "type":"string"
+        }
+    },
+
+    "sources":{
+        "default":{
+            "table":"charcoal_admin_motd_logs"
+        }
+    },
+    "default_source":"default"
+}

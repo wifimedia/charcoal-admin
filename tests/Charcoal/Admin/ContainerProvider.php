@@ -373,4 +373,11 @@ class ContainerProvider
             return [];
         };
     }
+
+    public function registerMotdLoader(Container $container)
+    {
+        $container['admin/motd/loader'] = function (Container $container) {
+            return null;
+        };
+    }
 }
