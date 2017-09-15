@@ -128,6 +128,101 @@ if (!String.prototype.replacePairs) {
         }
     });
 }
+
+if (!Function.prototype.bind) {
+    /**
+     * Create a new function that, when called, has its `this` keyword set to the provided value,
+     * with a given sequence of arguments preceding any provided when the new function is called.'
+     *
+     * @param  {Object} oThis - The value to be passed as the this parameter to the target function
+     *     when the bound function is called.
+     * @param  {Mixed} [...] - Arguments to prepend to arguments provided to the bound function
+     *     when invoking the target function.
+     * @return {Callable} A copy of the given function with the specified this value and initial arguments.
+     */
+    Function.prototype.bind = function(oThis) {
+        if (typeof this !== 'function') {
+            // closest thing possible to the ECMAScript 5
+            // internal IsCallable function
+            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+        }
+
+        var aArgs   = Array.prototype.slice.call(arguments, 1),
+            fToBind = this,
+            fNOP    = function() {},
+            fBound  = function() {
+                return fToBind.apply(
+                    this instanceof fNOP
+                    ? this
+                    : oThis,
+                    aArgs.concat(Array.prototype.slice.call(arguments))
+                );
+            };
+
+        if (this.prototype) {
+            // Function.prototype doesn't have a prototype property
+            fNOP.prototype = this.prototype;
+        }
+        fBound.prototype = new fNOP();
+
+        return fBound;
+    };
+}
+;/**
+ * Deferred Callbacks
+ *
+ * A multi-purpose callbacks list object that provides a powerful way to manage callback lists.
+ *
+ * @link https://api.jquery.com/jQuery.Callbacks/
+ */
+
+/**
+ * Creates a new Callbacks List.
+ *
+ * @class
+ * @classdesc A class wrapper for {@see https://api.jquery.com/jQuery.Callbacks/ jQuery's callbacks list object}.
+ * @augments  jQuery.Callbacks
+ * @param     {?(Function|Function[])} [callbacks] - One or more functions,
+ *     that are to be added to the callback list.
+ */
+$(function () {
+    window.jqCallbacks = function (callbacks) {};
+    jqCallbacks.prototype = $.Callbacks('unique memory stopOnFalse');
+    jqCallbacks.prototype.constructor = jqCallbacks.prototype.add;
+});
+;/**
+ * Deferred Object
+ *
+ * Provides a way to register multiple callbacks into self-managed callback queues
+ *
+ * @link https://api.jquery.com/jQuery.Deferred/
+ */
+
+/**
+ * Creates a new Deferred Object.
+ *
+ * @class
+ * @classdesc A class wrapper for {@see https://api.jquery.com/jQuery.Deferred/ jQuery's deferred object}.
+ * @augments  jQuery.Deferred
+ */
+$(function () {
+    window.jqDeferred = function () {};
+    jqDeferred.prototype = $.Deferred();
+});
+;/**
+ * Creates a new XHR Middleware.
+ *
+ * @class
+ * @classdesc A class wrapper for {@see https://api.jquery.com/jQuery.Callbacks/ jQuery's callbacks list object}.
+ * @augments  jQuery.Callbacks
+ * @param     {?(Function|Function[])} [callbacks] - One or more functions,
+ *     that are to be added to the callback list.
+ */
+$(function () {
+    window.jqXHRMiddleware = function (callbacks) {};
+    jqXHRMiddleware.prototype = $.Callbacks('unique memory stopOnFalse');
+    jqXHRMiddleware.prototype.constructor = jqXHRMiddleware.prototype.add;
+});
 ;var Charcoal = Charcoal || {};
 
 /**
@@ -1299,7 +1394,7 @@ Charcoal.Admin = (function () {
     Admin.FeedbackEntry = Entry;
 
 }(jQuery, Charcoal.Admin, document));
-;/* globals widgetL10n */
+;/* globals widgetL10n,jqXHRMiddleware */
 /**
  * charcoal/admin/widget
  * This should be the base for all widgets
@@ -1326,10 +1421,10 @@ Charcoal.Admin = (function () {
  * - `reload( callback )`
  */
 Charcoal.Admin.Widget = function (opts) {
-    this._element = undefined;
-    this._id      = undefined;
-    this._type    = undefined;
-    this._opts    = undefined;
+    this._element  = undefined;
+    this._id       = undefined;
+    this._type     = undefined;
+    this._opts     = undefined;
 
     if (!opts) {
         return this;
@@ -1475,42 +1570,86 @@ Charcoal.Admin.Widget.prototype.anim_out = function (callback) {
     return this;
 };
 
-Charcoal.Admin.Widget.prototype.reload = function (callback) {
-    var that = this;
+/**
+ * @param  {Boolean} [flag] - Whether to supress feedback (TRUE) or not (FALSE).
+ * @return {Boolean} Returns the feedback status.
+ */
+Charcoal.Admin.Widget.prototype.suppress_feedback = function (flag) {
+    console.log('♯ Widget.suppress_feedback:', flag)
+    if (typeof flag === 'boolean') {
+        Charcoal.Admin.Widget.prototype._feedback = !flag;
+    }
 
-    var url  = Charcoal.Admin.admin_url() + 'widget/load';
-    var data = {
-        widget_type:    that.widget_type || that.type(),
-        widget_options: that.widget_options()
-    };
+    return !Charcoal.Admin.Widget.prototype._feedback;
+};
+Charcoal.Admin.Widget.prototype._feedback = true;
+
+/**
+ * @param  {callable} callback - A routine to be called when the reload is resolved.
+ * @return {jqXHR} The The jQuery XMLHttpRequest object.
+ */
+Charcoal.Admin.Widget.prototype.reload = function (callback) {
+    var that = this,
+        url  = Charcoal.Admin.admin_url() + 'widget/load',
+        data = {
+            widget_type: that.widget_type || that.type(),
+            widget_options: that.widget_options()
+        },
+        request = {
+            type:        'POST',
+            url:         url,
+            data:        JSON.stringify(data),
+            dataType:    'json',
+            contentType: 'application/json'
+        },
+        middleware,
+        xhr;
 
     // Response from the reload action should always include a
     // widget_id and widget_html in order to work accordingly.
     // @todo add nice styles and stuffs.
-    $.ajax({
-        type:        'POST',
-        url:         url,
-        data:        JSON.stringify(data),
-        dataType:    'json',
-        contentType: 'application/json',
-        success: function (response) {
-            if (typeof response.widget_id === 'string') {
-                that.set_id(response.widget_id);
-                that.anim_out(function () {
-                    that.element().replaceWith(response.widget_html);
-                    that.set_element($('#' + that.id()));
+    xhr = $.ajax(request)
+        .then(this.response_parse.bind(this, widgetL10n.loadingFailed))
+        .done(this.response_done.bind(this))
+        .fail(this.response_fail.bind(this, widgetL10n.loadingFailed));
 
-                    // Pure dompe.
-                    that.element().hide().fadeIn();
-                    that.init();
-                });
-            }
-            // Callback
-            if (typeof callback === 'function') {
-                callback.call(that, response);
-            }
-        }
-    });
+    console.log('Middleware:', (callback instanceof jqXHRMiddleware), callback);
+    if (callback instanceof jqXHRMiddleware) {
+        middleware = callback;
+        callback   = null;
+        console.log('♯ ', middleware);
+        middleware.fire(xhr);
+    }
+
+    xhr.done(this.reloaded.bind(this, callback))
+       .always(this.response_always.bind(this));
+
+    return xhr;
+};
+
+/**
+ * @param {Callable} callback - A routine to be called when the reload is resolved.
+ * @param {Object}   response - The XHR response.
+ */
+Charcoal.Admin.Widget.prototype.reloaded = function (callback, response) {
+    var that = this;
+    if (typeof response.widget_id === 'string') {
+        that.set_id(response.widget_id);
+        that.anim_out(function () {
+            var $newWidget = $(response.widget_html).hide();
+
+            that.element().replaceWith($newWidget);
+            that.set_element($('#' + that.id()));
+
+            // Pure dompe.
+            that.element().fadeIn();
+            that.init();
+        });
+    }
+
+    if (typeof callback === 'function') {
+        callback.call(this, response);
+    }
 };
 
 /**
@@ -1540,8 +1679,8 @@ Charcoal.Admin.Widget.prototype.dialog = function (dialog_opts, callback) {
         showHeader: showHeader,
         showFooter: showFooter,
         onshown: function () {
-                Charcoal.Admin.manager().render();
-            }
+            Charcoal.Admin.manager().render();
+        }
     };
 
     var dialogOptions = $.extend({}, defaultOptions, userOptions);
@@ -1582,18 +1721,8 @@ Charcoal.Admin.Widget.prototype.dialog = function (dialog_opts, callback) {
             dataType: 'json'
         });
 
-        xhr.then(function (response, textStatus, jqXHR) {
-                if (!response || !response.success) {
-                    if (response.feedbacks) {
-                        return $.Deferred().reject(jqXHR, textStatus, response.feedbacks);
-                    } else {
-                        return $.Deferred().reject(jqXHR, textStatus, widgetL10n.loadingFailed);
-                    }
-                }
-
-                return $.Deferred().resolve(response, textStatus, jqXHR);
-            })
-            .done(function (response/*, textStatus, jqXHR*/) {
+        xhr.then(this.response_parse.bind(this, widgetL10n.loadingFailed))
+           .done(function (response/*, textStatus, jqXHR*/) {
                 dialog.setMessage(response.widget_html);
 
                 if (typeof callback === 'function') {
@@ -1601,8 +1730,8 @@ Charcoal.Admin.Widget.prototype.dialog = function (dialog_opts, callback) {
                 }
 
                 $('[data-toggle="tooltip"]', dialog.getModalBody()).tooltip();
-            })
-            .fail(function (jqXHR, textStatus, errorThrown) {
+           })
+           .fail(function (jqXHR, textStatus, errorThrown) {
                 dialog.setType(BootstrapDialog.TYPE_DANGER);
                 dialog.setMessage(widgetL10n.loadingFailed);
 
@@ -1638,7 +1767,7 @@ Charcoal.Admin.Widget.prototype.dialog = function (dialog_opts, callback) {
                 }
 
                 $('[data-toggle="tooltip"]', dialog.getModalBody()).tooltip();
-            });
+           });
 
         return $message;
     };
@@ -1665,6 +1794,58 @@ Charcoal.Admin.Widget.prototype.confirm = function (dialog_opts, confirmed_callb
     var opts = $.extend(defaults, dialog_opts);
 
     BootstrapDialog.confirm(opts);
+};
+
+Charcoal.Admin.Widget.prototype.response_parse = function (errorMessage, response, textStatus, jqXHR) {
+    console.log('♯ Widget.XHR.Parse'/*, arguments*/);
+    if (!response || !response.success || response.error) {
+        return $.Deferred().reject(jqXHR, textStatus, response.feedbacks || response.message || errorMessage);
+    }
+
+    return $.Deferred().resolve(response, textStatus, jqXHR);
+};
+
+Charcoal.Admin.Widget.prototype.response_done = function (response/* textStatus, jqXHR */) {
+    console.log('♯ Widget.XHR.Done'/*, arguments*/);
+    if (response.feedbacks) {
+        Charcoal.Admin.feedback(response.feedbacks);
+    }
+
+    if (response.next_url) {
+        // @todo "dynamise" the label
+        Charcoal.Admin.feedback().add_action({
+            label: commonL10n.continue,
+            callback: function () {
+                window.location.href = Charcoal.Admin.admin_url() + response.next_url;
+            }
+        });
+    }
+};
+
+Charcoal.Admin.Widget.prototype.response_fail = function (message, jqXHR, textStatus, errorThrown) {
+    console.log('♯ Widget.XHR.Fail'/*, arguments*/);
+    if (jqXHR.responseJSON && jqXHR.responseJSON.feedbacks) {
+        Charcoal.Admin.feedback(jqXHR.responseJSON.feedbacks);
+    } else {
+        var error = errorThrown || commonL10n.errorOccurred;
+
+        Charcoal.Admin.feedback([{
+            message: commonL10n.errorTemplate.replaceMap({
+                '[[ errorMessage ]]': message,
+                '[[ errorThrown ]]':  error
+            }),
+            level: 'error'
+        }]);
+    }
+};
+
+Charcoal.Admin.Widget.prototype.response_always = function (/*, .... */) {
+    console.log('♯ Widget.XHR.Always'/*, Charcoal.Admin.Widget.prototype._feedback, arguments*/);
+    if (Charcoal.Admin.Widget.prototype._feedback === true) {
+        Charcoal.Admin.feedback().dispatch();
+    } else {
+        Charcoal.Admin.Widget.prototype._feedback = true;
+    }
 };
 ;/* globals commonL10n,attachmentWidgetL10n */
 /**
@@ -2161,17 +2342,16 @@ Charcoal.Admin.Widget_Form = function (opts) {
     this.widget_type = 'charcoal/admin/widget/form';
 
     // Widget_Form properties
-    this.widget_id         = null;
-    this.obj_type          = null;
-    this.obj_id            = null;
-    this.save_action       = 'object/save';
-    this.update_action     = 'object/update';
-    this.form_selector     = null;
-    this.form_working      = false;
-    this.submitted_via     = null;
-    this.suppress_feedback = false;
-    this.is_new_object     = false;
-    this.xhr               = null;
+    this.widget_id     = null;
+    this.obj_type      = null;
+    this.obj_id        = null;
+    this.save_action   = 'object/save';
+    this.update_action = 'object/update';
+    this.form_selector = null;
+    this.form_working  = false;
+    this.submitted_via = null;
+    this.is_new_object = false;
+    this.xhr           = null;
 
     var urlParams = Charcoal.Admin.queryParams();
 
@@ -2310,42 +2490,24 @@ Charcoal.Admin.Widget_Form.prototype.submit_form = function (form) {
         contentType: false,
     });
 
+    var failMessage = (this.is_new_object ? formWidgetL10n.createFailed : formWidgetL10n.updateFailed);
+
     this.xhr
-        .then($.proxy(this.request_done, this, $form, $trigger))
-        .done($.proxy(this.request_success, this, $form, $trigger))
-        .fail($.proxy(this.request_failed, this, $form, $trigger))
-        .always($.proxy(this.request_complete, this, $form, $trigger));
+        .then(this.request_parse.bind(this, commonL10n.errorOccurred))
+        .fail(this.request_fail.bind(this, failMessage))
+        .done(this.request_done.bind(this, $form, $trigger))
+        .always(this.request_always.bind(this, $form, $trigger));
 };
 
-Charcoal.Admin.Widget_Form.prototype.request_done = function ($form, $trigger, response, textStatus, jqXHR) {
-    if (!response || !response.success) {
-        if (response.feedbacks) {
-            return $.Deferred().reject(jqXHR, textStatus, response.feedbacks);
-        } else {
-            return $.Deferred().reject(jqXHR, textStatus, commonL10n.errorOccurred);
-        }
-    }
+Charcoal.Admin.Widget_Form.prototype.request_parse = Charcoal.Admin.Widget.prototype.response_parse;
 
-    return $.Deferred().resolve(response, textStatus, jqXHR);
-};
+Charcoal.Admin.Widget_Form.prototype.request_fail = Charcoal.Admin.Widget.prototype.response_fail;
 
-Charcoal.Admin.Widget_Form.prototype.request_success = function ($form, $trigger, response/* textStatus, jqXHR */) {
-    if (response.feedbacks) {
-        Charcoal.Admin.feedback(response.feedbacks);
-    }
-
-    if (response.next_url) {
-        // @todo "dynamise" the label
-        Charcoal.Admin.feedback().add_action({
-            label: commonL10n.continue,
-            callback: function () {
-                window.location.href = Charcoal.Admin.admin_url() + response.next_url;
-            }
-        });
-    }
+Charcoal.Admin.Widget_Form.prototype.request_done = function ($form, $trigger, response/* textStatus, jqXHR */) {
+    Charcoal.Admin.Widget.prototype.response_done.apply(this, Array.prototype.slice.call(arguments, 2));
 
     if (this.is_new_object) {
-        this.suppress_feedback = true;
+        this.suppress_feedback(true);
 
         if (response.next_url) {
             window.location.href = Charcoal.Admin.admin_url() + response.next_url;
@@ -2363,32 +2525,12 @@ Charcoal.Admin.Widget_Form.prototype.request_success = function ($form, $trigger
     }
 };
 
-Charcoal.Admin.Widget_Form.prototype.request_failed = function ($form, $trigger, jqXHR, textStatus, errorThrown) {
-    if (jqXHR.responseJSON && jqXHR.responseJSON.feedbacks) {
-        Charcoal.Admin.feedback(jqXHR.responseJSON.feedbacks);
-    } else {
-        var message = (this.is_new_object ? formWidgetL10n.createFailed : formWidgetL10n.updateFailed);
-        var error   = errorThrown || commonL10n.errorOccurred;
-
-        Charcoal.Admin.feedback([{
-            message: commonL10n.errorTemplate.replaceMap({
-                '[[ errorMessage ]]': message,
-                '[[ errorThrown ]]':  error
-            }),
-            level:   'error'
-        }]);
-    }
-};
-
-Charcoal.Admin.Widget_Form.prototype.request_complete = function ($form, $trigger/*, .... */) {
-    if (!this.suppress_feedback) {
-        Charcoal.Admin.feedback().dispatch();
-        this.enable_form($form, $trigger);
-    }
+Charcoal.Admin.Widget_Form.prototype.request_always = function ($form, $trigger/*, .... */) {
+    Charcoal.Admin.Widget.prototype.response_always.apply(this, Array.prototype.slice.call(arguments, 2));
 
     this.submitted_via = null;
 
-    this.form_working = this.is_new_object = this.suppress_feedback = false;
+    this.form_working = this.is_new_object = false;
 };
 
 /**
@@ -2673,7 +2815,6 @@ Charcoal.Admin.Widget_Quick_Form = function (opts) {
     this.extra_form_data = opts.extra_form_data || {};
 
     this.form_working = false;
-    this.suppress_feedback = opts.suppress_feedback || false;
     this.is_new_object = false;
     this.xhr = null;
     this.obj_id = Charcoal.Admin.parseNumber(opts.obj_id) || 0;
@@ -2749,10 +2890,10 @@ Charcoal.Admin.Widget_Quick_Form.prototype.submit_form = function (form) {
     });
 
     this.xhr
-        .then($.proxy(this.request_done, this, $form, $trigger))
-        .done($.proxy(this.request_success, this, $form, $trigger))
-        .fail($.proxy(this.request_failed, this, $form, $trigger))
-        .always($.proxy(this.request_complete, this, $form, $trigger));
+        .then(this.request_parse.bind(this, commonL10n.errorOccurred))
+        .fail(this.request_fail.bind(this))
+        .done(this.request_done.bind(this, $form, $trigger))
+        .always(this.request_always.bind(this, $form, $trigger));
 };
 
 Charcoal.Admin.Widget_Quick_Form.prototype.disable_form = Charcoal.Admin.Widget_Form.prototype.disable_form;
@@ -2761,14 +2902,14 @@ Charcoal.Admin.Widget_Quick_Form.prototype.enable_form = Charcoal.Admin.Widget_F
 
 Charcoal.Admin.Widget_Quick_Form.prototype.request_url = Charcoal.Admin.Widget_Form.prototype.request_url;
 
-Charcoal.Admin.Widget_Quick_Form.prototype.request_done = Charcoal.Admin.Widget_Form.prototype.request_done;
+Charcoal.Admin.Widget_Quick_Form.prototype.request_parse = Charcoal.Admin.Widget_Form.prototype.request_parse;
 
-Charcoal.Admin.Widget_Quick_Form.prototype.request_failed = Charcoal.Admin.Widget_Form.prototype.request_failed;
+Charcoal.Admin.Widget_Quick_Form.prototype.request_fail = Charcoal.Admin.Widget_Form.prototype.request_fail;
 
-Charcoal.Admin.Widget_Quick_Form.prototype.request_complete = Charcoal.Admin.Widget_Form.prototype.request_complete;
+Charcoal.Admin.Widget_Quick_Form.prototype.request_always = Charcoal.Admin.Widget_Form.prototype.request_always;
 
-Charcoal.Admin.Widget_Quick_Form.prototype.request_success = function ($form, $trigger, response/* ... */) {
-    if (response.feedbacks && !this.suppress_feedback) {
+Charcoal.Admin.Widget_Quick_Form.prototype.request_done = function ($form, $trigger, response/* ... */) {
+    if (response.feedbacks && !this.suppress_feedback()) {
         Charcoal.Admin.feedback(response.feedbacks);
     }
 
@@ -3138,7 +3279,8 @@ Charcoal.Admin.Widget_Relation.prototype.widget_options = function ()
 {
     return this.opts('widget_options');
 };
-;/**
+;/* globals jqXHRMiddleware */
+/**
  * Search widget used for filtering a list
  * charcoal/admin/widget/search
  *
@@ -3149,10 +3291,11 @@ Charcoal.Admin.Widget_Relation.prototype.widget_options = function ()
  */
 Charcoal.Admin.Widget_Search = function (opts)
 {
-    this._elem = undefined;
+    this._elem       = undefined;
+    this._searching  = false;
+    this._middleware = null;
 
     if (!opts) {
-        // No chance
         return false;
     }
 
@@ -3166,7 +3309,8 @@ Charcoal.Admin.Widget_Search = function (opts)
         return false;
     }
 
-    this.opts = opts;
+    this.opts   = opts;
+    this.$input = null;
 
     return this;
 };
@@ -3174,6 +3318,38 @@ Charcoal.Admin.Widget_Search = function (opts)
 Charcoal.Admin.Widget_Search.prototype = Object.create(Charcoal.Admin.Widget.prototype);
 Charcoal.Admin.Widget_Search.prototype.constructor = Charcoal.Admin.Widget_Search;
 Charcoal.Admin.Widget_Search.prototype.parent = Charcoal.Admin.Widget.prototype;
+Charcoal.Admin.Widget_Search.prototype.suppress_feedback = Charcoal.Admin.Widget.prototype.suppress_feedback;
+
+/**
+ * @param  {Boolean} [flag] - Whether to the widget is searching (TRUE) or not (FALSE).
+ * @return {Boolean} Returns the feedback status.
+ */
+Charcoal.Admin.Widget_Search.prototype.searching = function (flag) {
+    if (typeof flag === 'boolean') {
+        this._searching = flag;
+    }
+
+    return this._searching;
+};
+
+/**
+ * @return {jqXHRMiddleware} Returns the XHR middleware.
+ */
+Charcoal.Admin.Widget_Search.prototype.middleware = function () {
+    if (this._middleware === null) {
+        var that = this;
+        this._middleware = new jqXHRMiddleware;
+        this._middleware.add(function (xhr) {
+            console.log('❯ Search.Middleware');
+            xhr.fail(function () {
+                console.log('❯ Search.Middleware.Fail');
+                that.suppress_feedback(false);
+            });
+        });
+    }
+
+    return this._middleware;
+};
 
 /**
  * Whats the widget that should be refreshed?
@@ -3187,20 +3363,23 @@ Charcoal.Admin.Widget_Search.prototype.set_remote_widget = function ()
 
 Charcoal.Admin.Widget_Search.prototype.init = function ()
 {
-    var $elem = this.element();
+    var that  = this,
+        $form = this.element();
 
-    var that = this;
+    this.$input = $form.find('[name="query"]');
 
     // Submit
-    $elem.on('click', '.js-search', function (e) {
-        e.preventDefault();
+    $form.on('submit.charcoal.search', function (event) {
+        console.log('search.submit', event);
+        event.preventDefault();
         that.submit();
     });
 
     // Undo
-    $elem.on('click', '.js-undo', function (e) {
-        e.preventDefault();
-        that.undo();
+    $form.on('reset.charcoal.search', function (event) {
+        console.log('search.reset', event);
+        event.preventDefault();
+        that.clear();
     });
 };
 
@@ -3210,6 +3389,10 @@ Charcoal.Admin.Widget_Search.prototype.init = function ()
  */
 Charcoal.Admin.Widget_Search.prototype.submit = function ()
 {
+    if (this.searching()) {
+        return;
+    }
+
     var manager = Charcoal.Admin.manager();
     var widgets = manager.components.widgets;
 
@@ -3226,9 +3409,9 @@ Charcoal.Admin.Widget_Search.prototype.submit = function ()
  * Resets the search filters
  * @return this (chainable);
  */
-Charcoal.Admin.Widget_Search.prototype.undo = function ()
+Charcoal.Admin.Widget_Search.prototype.clear = function ()
 {
-    this.element().find('input').val('');
+    this.$input.val('');
     this.submit();
     return this;
 };
@@ -3251,28 +3434,39 @@ Charcoal.Admin.Widget_Search.prototype.dispatch = function (widget)
         widget.pagination.page = 1;
     }
 
-    var $input, words, props, filters = [];
+    widget.element().addClass('is-pending');
 
-    $input = this.element().find('input');
-    words  = $input.val().split(/\s/);
-    props  = this.opts.data.list || [];
+    var xhr, query, words, props, filters = [], that = this;
 
-    $.each(words, function (i, word) {
-        $.each(props, function (j, prop) {
-            filters.push({
-                val:      '%' + word + '%',
-                property: prop,
-                operator: 'LIKE',
-                operand:  'OR'
+    query = this.$input.val().trim();
+    if (query) {
+        words = query.split(/\s/);
+        props = this.opts.data.list || [];
+
+        $.each(words, function (i, word) {
+            $.each(props, function (j, prop) {
+                filters.push({
+                    val:      '%' + word + '%',
+                    property: prop,
+                    operator: 'LIKE',
+                    operand:  'OR'
+                });
             });
         });
-    });
+    }
 
     widget.set_filters(filters);
 
     // widget.add_search(val, props);
 
-    widget.reload();
+    this.searching(true);
+    this.suppress_feedback(true);
+
+    xhr = widget.reload(this.middleware());
+    xhr.always(function () {
+        console.log('❯ Always?');
+        that.searching(false);
+    })
 
     return this;
 };
@@ -3556,14 +3750,13 @@ Charcoal.Admin.Widget_Table.prototype.widget_options = function ()
 };
 
 /**
- *
+ * @param  {callable} callback - A routine to be called when the reload is resolved.
+ * @return {jqXHR} The The jQuery XMLHttpRequest object.
  */
 Charcoal.Admin.Widget_Table.prototype.reload = function (callback)
 {
     // Call supra class
-    Charcoal.Admin.Widget.prototype.reload.call(this, callback);
-
-    return this;
+    return Charcoal.Admin.Widget.prototype.reload.apply(this, arguments);
 
 };
 

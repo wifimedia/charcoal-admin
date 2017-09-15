@@ -7,7 +7,7 @@
     This widget expects to be in a context (model) of type `Charcoal\Admin\Widget\Form`.
 --}}
 <div class="form charcoal-admin-widget-form">
-    <form id="{{ widgetId }}" method="{{ method }}" action="{{ adminUrl }}{{ action }}" enctype="multipart/form-data">
+    <form id="{{ widgetId }}" class="o-widget o-widget-form" method="{{ method }}" action="{{ adminUrl }}{{ action }}" enctype="multipart/form-data">
 
         {{# isTabbable }}
         {{> charcoal/admin/template/form/nav-tabs }}

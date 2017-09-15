@@ -278,14 +278,13 @@ Charcoal.Admin.Widget_Table.prototype.widget_options = function ()
 };
 
 /**
- *
+ * @param  {callable} callback - A routine to be called when the reload is resolved.
+ * @return {jqXHR} The The jQuery XMLHttpRequest object.
  */
 Charcoal.Admin.Widget_Table.prototype.reload = function (callback)
 {
     // Call supra class
-    Charcoal.Admin.Widget.prototype.reload.call(this, callback);
-
-    return this;
+    return Charcoal.Admin.Widget.prototype.reload.apply(this, arguments);
 
 };
 

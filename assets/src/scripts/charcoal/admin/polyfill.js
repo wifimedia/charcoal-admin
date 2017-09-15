@@ -128,3 +128,43 @@ if (!String.prototype.replacePairs) {
         }
     });
 }
+
+if (!Function.prototype.bind) {
+    /**
+     * Create a new function that, when called, has its `this` keyword set to the provided value,
+     * with a given sequence of arguments preceding any provided when the new function is called.'
+     *
+     * @param  {Object} oThis - The value to be passed as the this parameter to the target function
+     *     when the bound function is called.
+     * @param  {Mixed} [...] - Arguments to prepend to arguments provided to the bound function
+     *     when invoking the target function.
+     * @return {Callable} A copy of the given function with the specified this value and initial arguments.
+     */
+    Function.prototype.bind = function(oThis) {
+        if (typeof this !== 'function') {
+            // closest thing possible to the ECMAScript 5
+            // internal IsCallable function
+            throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+        }
+
+        var aArgs   = Array.prototype.slice.call(arguments, 1),
+            fToBind = this,
+            fNOP    = function() {},
+            fBound  = function() {
+                return fToBind.apply(
+                    this instanceof fNOP
+                    ? this
+                    : oThis,
+                    aArgs.concat(Array.prototype.slice.call(arguments))
+                );
+            };
+
+        if (this.prototype) {
+            // Function.prototype doesn't have a prototype property
+            fNOP.prototype = this.prototype;
+        }
+        fBound.prototype = new fNOP();
+
+        return fBound;
+    };
+}

@@ -14,17 +14,16 @@ Charcoal.Admin.Widget_Form = function (opts) {
     this.widget_type = 'charcoal/admin/widget/form';
 
     // Widget_Form properties
-    this.widget_id         = null;
-    this.obj_type          = null;
-    this.obj_id            = null;
-    this.save_action       = 'object/save';
-    this.update_action     = 'object/update';
-    this.form_selector     = null;
-    this.form_working      = false;
-    this.submitted_via     = null;
-    this.suppress_feedback = false;
-    this.is_new_object     = false;
-    this.xhr               = null;
+    this.widget_id     = null;
+    this.obj_type      = null;
+    this.obj_id        = null;
+    this.save_action   = 'object/save';
+    this.update_action = 'object/update';
+    this.form_selector = null;
+    this.form_working  = false;
+    this.submitted_via = null;
+    this.is_new_object = false;
+    this.xhr           = null;
 
     var urlParams = Charcoal.Admin.queryParams();
 
@@ -163,42 +162,24 @@ Charcoal.Admin.Widget_Form.prototype.submit_form = function (form) {
         contentType: false,
     });
 
+    var failMessage = (this.is_new_object ? formWidgetL10n.createFailed : formWidgetL10n.updateFailed);
+
     this.xhr
-        .then($.proxy(this.request_done, this, $form, $trigger))
-        .done($.proxy(this.request_success, this, $form, $trigger))
-        .fail($.proxy(this.request_failed, this, $form, $trigger))
-        .always($.proxy(this.request_complete, this, $form, $trigger));
+        .then(this.request_parse.bind(this, commonL10n.errorOccurred))
+        .fail(this.request_fail.bind(this, failMessage))
+        .done(this.request_done.bind(this, $form, $trigger))
+        .always(this.request_always.bind(this, $form, $trigger));
 };
 
-Charcoal.Admin.Widget_Form.prototype.request_done = function ($form, $trigger, response, textStatus, jqXHR) {
-    if (!response || !response.success) {
-        if (response.feedbacks) {
-            return $.Deferred().reject(jqXHR, textStatus, response.feedbacks);
-        } else {
-            return $.Deferred().reject(jqXHR, textStatus, commonL10n.errorOccurred);
-        }
-    }
+Charcoal.Admin.Widget_Form.prototype.request_parse = Charcoal.Admin.Widget.prototype.response_parse;
 
-    return $.Deferred().resolve(response, textStatus, jqXHR);
-};
+Charcoal.Admin.Widget_Form.prototype.request_fail = Charcoal.Admin.Widget.prototype.response_fail;
 
-Charcoal.Admin.Widget_Form.prototype.request_success = function ($form, $trigger, response/* textStatus, jqXHR */) {
-    if (response.feedbacks) {
-        Charcoal.Admin.feedback(response.feedbacks);
-    }
-
-    if (response.next_url) {
-        // @todo "dynamise" the label
-        Charcoal.Admin.feedback().add_action({
-            label: commonL10n.continue,
-            callback: function () {
-                window.location.href = Charcoal.Admin.admin_url() + response.next_url;
-            }
-        });
-    }
+Charcoal.Admin.Widget_Form.prototype.request_done = function ($form, $trigger, response/* textStatus, jqXHR */) {
+    Charcoal.Admin.Widget.prototype.response_done.apply(this, Array.prototype.slice.call(arguments, 2));
 
     if (this.is_new_object) {
-        this.suppress_feedback = true;
+        this.suppress_feedback(true);
 
         if (response.next_url) {
             window.location.href = Charcoal.Admin.admin_url() + response.next_url;
@@ -216,32 +197,12 @@ Charcoal.Admin.Widget_Form.prototype.request_success = function ($form, $trigger
     }
 };
 
-Charcoal.Admin.Widget_Form.prototype.request_failed = function ($form, $trigger, jqXHR, textStatus, errorThrown) {
-    if (jqXHR.responseJSON && jqXHR.responseJSON.feedbacks) {
-        Charcoal.Admin.feedback(jqXHR.responseJSON.feedbacks);
-    } else {
-        var message = (this.is_new_object ? formWidgetL10n.createFailed : formWidgetL10n.updateFailed);
-        var error   = errorThrown || commonL10n.errorOccurred;
-
-        Charcoal.Admin.feedback([{
-            message: commonL10n.errorTemplate.replaceMap({
-                '[[ errorMessage ]]': message,
-                '[[ errorThrown ]]':  error
-            }),
-            level:   'error'
-        }]);
-    }
-};
-
-Charcoal.Admin.Widget_Form.prototype.request_complete = function ($form, $trigger/*, .... */) {
-    if (!this.suppress_feedback) {
-        Charcoal.Admin.feedback().dispatch();
-        this.enable_form($form, $trigger);
-    }
+Charcoal.Admin.Widget_Form.prototype.request_always = function ($form, $trigger/*, .... */) {
+    Charcoal.Admin.Widget.prototype.response_always.apply(this, Array.prototype.slice.call(arguments, 2));
 
     this.submitted_via = null;
 
-    this.form_working = this.is_new_object = this.suppress_feedback = false;
+    this.form_working = this.is_new_object = false;
 };
 
 /**

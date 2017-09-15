@@ -2189,6 +2189,12 @@ img.u-contrast-dark {
   border-color: #333;
   background-color: #666; }
 
+.o-widget {
+  transition: opacity 0.1s ease-out; }
+
+.is-pending {
+  opacity: 0.5; }
+
 .u-spin {
   -webkit-animation: spin 1.5s infinite linear;
           animation: spin 1.5s infinite linear; }

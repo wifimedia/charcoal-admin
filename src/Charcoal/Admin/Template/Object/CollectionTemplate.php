@@ -31,6 +31,33 @@ class CollectionTemplate extends AdminTemplate implements
     use DashboardContainerTrait;
 
     /**
+     * The template header's Search Widget.
+     *
+     * Note: Widget is based on the template's dashboard config.
+     *
+     * @var SearchWidget|null
+     */
+    private $searchWidget;
+
+    /**
+     * The template header's Search Widget configset.
+     *
+     * Note: Widget settings retrieved from the template's dashboard config.
+     *
+     * @var array|null
+     */
+    private $searchConfig;
+
+    /**
+     * Whether to show the header's Search widget.
+     *
+     * Note: Condition is based on the template's dashboard config.
+     *
+     * @var boolean|null
+     */
+    private $showSearch;
+
+    /**
      * @param Container $container DI Container.
      * @return void
      */
@@ -100,6 +127,22 @@ class CollectionTemplate extends AdminTemplate implements
 
         $dashboardConfig = $adminMetadata['dashboards'][$dashboardIdent];
 
+        /** Setup the header's earch widget */
+        $this->showSearch   = true;
+        $this->searchConfig = [];
+        if (isset($dashboardConfig['widgets']['search'])) {
+            $this->searchConfig = $dashboardConfig['widgets']['search'];
+            unset($dashboardConfig['widgets']['search']);
+        }
+
+        if (isset($this->searchConfig['active'])) {
+            $this->setShowSearch($this->searchConfig['active']);
+        }
+
+        if (isset($dashboardConfig['show_search'])) {
+            $this->setShowSearch($dashboardConfig['show_search']);
+        }
+
         return $dashboardConfig;
     }
 
@@ -144,22 +187,64 @@ class CollectionTemplate extends AdminTemplate implements
     }
 
     /**
-     * Sets the search widget accodingly
-     * Uses the "default_search_list" ident that should point
-     * on ident in the "lists"
+     * Toggle whether the SearchWidget should be shown in the header.
      *
-     * @return widget
+     * @param  boolean $show The show search widget flag.
+     * @return AdminTemplate Chainable
+     */
+    public function setShowSearch($show)
+    {
+        $this->showSearch = !!$show;
+        return $this;
+    }
+
+    /**
+     * Determine if the SearchWidget should be shown in the header.
+     *
+     * @return boolean
+     */
+    public function showSearch()
+    {
+        if ($this->showSearch === null) {
+            $this->dashboardConfig();
+        }
+
+        return $this->showSearch;
+    }
+
+    /**
+     * Retrieve the optional search widget.
+     *
+     * @return SearchWidget|null
      */
     public function searchWidget()
     {
+        if ($this->searchWidget === null) {
+            $this->searchWidget = $this->createSearchWidget();
+        }
+
+        return $this->searchWidget;
+    }
+
+    /**
+     * Create the search widget.
+     *
+     * Note:
+     * - Uses the "default_search_list" ident that should point
+     *   to a list ident in the "lists" set.
+     * - If the ident doesn't match a list, the widget will
+     *   return basicly every properties of the object.
+     *
+     * @return SearchWidget
+     */
+    protected function createSearchWidget()
+    {
+        $this->dashboardConfig();
+
         $widget = $this->widgetFactory()->create(SearchWidget::class);
         $widget->setObjType($this->objType());
-
-        $listIdent = $this->metadataListIdent();
-
-        // Note that if the ident doesn't match a list,
-        // it will return basicly every properties of the object
-        $widget->setCollectionIdent($listIdent);
+        $widget->setCollectionIdent($this->metadataListIdentForSearch());
+        $widget->setData($this->searchConfig);
 
         return $widget;
     }
@@ -167,19 +252,17 @@ class CollectionTemplate extends AdminTemplate implements
     /**
      * @return string
      */
-    private function metadataListIdent()
+    private function metadataListIdentForSearch()
     {
         $adminMetadata = $this->objAdminMetadata();
 
         if (isset($adminMetadata['default_search_list'])) {
-            $listIdent = $adminMetadata['default_search_list'];
+            return $adminMetadata['default_search_list'];
         } elseif (isset($adminMetadata['default_list'])) {
-            $listIdent = $adminMetadata['default_list'];
+            return $adminMetadata['default_list'];
         } else {
-            $listIdent = 'default';
+            return 'default';
         }
-
-        return $listIdent;
     }
 
     /**

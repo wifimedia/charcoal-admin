@@ -9,32 +9,34 @@ Display the object's "collection" dashboard.
 This template expects a `Charcoal\Admin\Template\Object\Collection` model as context.
 
 --}}
-{{>charcoal/admin/template/inc.header}}
+{{> charcoal/admin/template/inc.header }}
 
 <div class="o-flex">
-    {{#showSidemenu}}
-        {{#sidemenu}}
-            {{>charcoal/admin/widget/sidemenu}}
-        {{/sidemenu}}
-    {{/showSidemenu}}
+    {{# showSidemenu }}
+        {{# sidemenu }}
+            {{> charcoal/admin/widget/sidemenu }}
+        {{/ sidemenu }}
+    {{/ showSidemenu }}
 
-    {{>charcoal/admin/widget/feedbacks}}
+    {{> charcoal/admin/widget/feedbacks }}
 
     {{!-- Object list section --}}
     <div class="o-flex_main">
         <section class="o-container -bottom">
             <header class="o-header">
-                <h1>{{title}}</h1>
-                {{#searchWidget}}
-                    {{>charcoal/admin/widget/search}}
-                {{/searchWidget}}
+                <h1>{{ title }}</h1>
+                {{# showSearch }}
+                    {{# searchWidget }}
+                        {{> charcoal/admin/widget/search }}
+                    {{/ searchWidget }}
+                {{/ showSearch }}
             </header>
-            {{#dashboard}}
-                {{>charcoal/admin/widget/dashboard}}
-            {{/dashboard}}
+            {{# dashboard }}
+                {{> charcoal/admin/widget/dashboard }}
+            {{/ dashboard }}
 
         </section>
     </div>
 </div>
 
-{{>charcoal/admin/template/inc.footer}}
+{{> charcoal/admin/template/inc.footer }}

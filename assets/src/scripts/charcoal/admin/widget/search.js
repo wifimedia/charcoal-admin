@@ -1,3 +1,4 @@
+/* globals jqXHRMiddleware */
 /**
  * Search widget used for filtering a list
  * charcoal/admin/widget/search
@@ -9,10 +10,11 @@
  */
 Charcoal.Admin.Widget_Search = function (opts)
 {
-    this._elem = undefined;
+    this._elem       = undefined;
+    this._searching  = false;
+    this._middleware = null;
 
     if (!opts) {
-        // No chance
         return false;
     }
 
@@ -26,7 +28,8 @@ Charcoal.Admin.Widget_Search = function (opts)
         return false;
     }
 
-    this.opts = opts;
+    this.opts   = opts;
+    this.$input = null;
 
     return this;
 };
@@ -34,6 +37,38 @@ Charcoal.Admin.Widget_Search = function (opts)
 Charcoal.Admin.Widget_Search.prototype = Object.create(Charcoal.Admin.Widget.prototype);
 Charcoal.Admin.Widget_Search.prototype.constructor = Charcoal.Admin.Widget_Search;
 Charcoal.Admin.Widget_Search.prototype.parent = Charcoal.Admin.Widget.prototype;
+Charcoal.Admin.Widget_Search.prototype.suppress_feedback = Charcoal.Admin.Widget.prototype.suppress_feedback;
+
+/**
+ * @param  {Boolean} [flag] - Whether to the widget is searching (TRUE) or not (FALSE).
+ * @return {Boolean} Returns the feedback status.
+ */
+Charcoal.Admin.Widget_Search.prototype.searching = function (flag) {
+    if (typeof flag === 'boolean') {
+        this._searching = flag;
+    }
+
+    return this._searching;
+};
+
+/**
+ * @return {jqXHRMiddleware} Returns the XHR middleware.
+ */
+Charcoal.Admin.Widget_Search.prototype.middleware = function () {
+    if (this._middleware === null) {
+        var that = this;
+        this._middleware = new jqXHRMiddleware;
+        this._middleware.add(function (xhr) {
+            console.log('❯ Search.Middleware');
+            xhr.fail(function () {
+                console.log('❯ Search.Middleware.Fail');
+                that.suppress_feedback(false);
+            });
+        });
+    }
+
+    return this._middleware;
+};
 
 /**
  * Whats the widget that should be refreshed?
@@ -47,20 +82,23 @@ Charcoal.Admin.Widget_Search.prototype.set_remote_widget = function ()
 
 Charcoal.Admin.Widget_Search.prototype.init = function ()
 {
-    var $elem = this.element();
+    var that  = this,
+        $form = this.element();
 
-    var that = this;
+    this.$input = $form.find('[name="query"]');
 
     // Submit
-    $elem.on('click', '.js-search', function (e) {
-        e.preventDefault();
+    $form.on('submit.charcoal.search', function (event) {
+        console.log('search.submit', event);
+        event.preventDefault();
         that.submit();
     });
 
     // Undo
-    $elem.on('click', '.js-undo', function (e) {
-        e.preventDefault();
-        that.undo();
+    $form.on('reset.charcoal.search', function (event) {
+        console.log('search.reset', event);
+        event.preventDefault();
+        that.clear();
     });
 };
 
@@ -70,6 +108,10 @@ Charcoal.Admin.Widget_Search.prototype.init = function ()
  */
 Charcoal.Admin.Widget_Search.prototype.submit = function ()
 {
+    if (this.searching()) {
+        return;
+    }
+
     var manager = Charcoal.Admin.manager();
     var widgets = manager.components.widgets;
 
@@ -86,9 +128,9 @@ Charcoal.Admin.Widget_Search.prototype.submit = function ()
  * Resets the search filters
  * @return this (chainable);
  */
-Charcoal.Admin.Widget_Search.prototype.undo = function ()
+Charcoal.Admin.Widget_Search.prototype.clear = function ()
 {
-    this.element().find('input').val('');
+    this.$input.val('');
     this.submit();
     return this;
 };
@@ -111,28 +153,39 @@ Charcoal.Admin.Widget_Search.prototype.dispatch = function (widget)
         widget.pagination.page = 1;
     }
 
-    var $input, words, props, filters = [];
+    widget.element().addClass('is-pending');
 
-    $input = this.element().find('input');
-    words  = $input.val().split(/\s/);
-    props  = this.opts.data.list || [];
+    var xhr, query, words, props, filters = [], that = this;
 
-    $.each(words, function (i, word) {
-        $.each(props, function (j, prop) {
-            filters.push({
-                val:      '%' + word + '%',
-                property: prop,
-                operator: 'LIKE',
-                operand:  'OR'
+    query = this.$input.val().trim();
+    if (query) {
+        words = query.split(/\s/);
+        props = this.opts.data.list || [];
+
+        $.each(words, function (i, word) {
+            $.each(props, function (j, prop) {
+                filters.push({
+                    val:      '%' + word + '%',
+                    property: prop,
+                    operator: 'LIKE',
+                    operand:  'OR'
+                });
             });
         });
-    });
+    }
 
     widget.set_filters(filters);
 
     // widget.add_search(val, props);
 
-    widget.reload();
+    this.searching(true);
+    this.suppress_feedback(true);
+
+    xhr = widget.reload(this.middleware());
+    xhr.always(function () {
+        console.log('❯ Always?');
+        that.searching(false);
+    })
 
     return this;
 };

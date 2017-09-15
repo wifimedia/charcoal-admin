@@ -2,20 +2,20 @@
 
 namespace Charcoal\Admin\Widget;
 
-use \InvalidArgumentException;
+use InvalidArgumentException;
 
 // From Pimple
-use \Pimple\Container;
+use Pimple\Container;
 
 // From 'charcoal-core'
-use \Charcoal\Charcoal;
-use \Charcoal\Property\PropertyFactory;
-use \Charcoal\Property\PropertyInterface;
+use Charcoal\Charcoal;
+use Charcoal\Property\PropertyFactory;
+use Charcoal\Property\PropertyInterface;
 
 // From 'charcoal-admin'
-use \Charcoal\Admin\AdminWidget;
-use \Charcoal\Admin\Ui\CollectionContainerInterface;
-use \Charcoal\Admin\Ui\CollectionContainerTrait;
+use Charcoal\Admin\AdminWidget;
+use Charcoal\Admin\Ui\CollectionContainerInterface;
+use Charcoal\Admin\Ui\CollectionContainerTrait;
 
 /**
  * The table widget displays a collection in a tabular (table) format.
@@ -50,6 +50,14 @@ class SearchWidget extends AdminWidget implements CollectionContainerInterface
      */
     public function setData(array $data)
     {
+        if (isset($data['obj_type'])) {
+            $this->setObjType($data['obj_type']);
+        }
+
+        if (isset($data['collection_ident'])) {
+            $this->setCollectionIdent($data['collection_ident']);
+        }
+
         $objData = $this->dataFromObject();
         $data    = array_merge_recursive($objData, $data);
 

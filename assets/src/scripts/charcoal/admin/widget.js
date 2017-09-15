@@ -1,4 +1,4 @@
-/* globals widgetL10n */
+/* globals widgetL10n,jqXHRMiddleware */
 /**
  * charcoal/admin/widget
  * This should be the base for all widgets
@@ -25,10 +25,10 @@
  * - `reload( callback )`
  */
 Charcoal.Admin.Widget = function (opts) {
-    this._element = undefined;
-    this._id      = undefined;
-    this._type    = undefined;
-    this._opts    = undefined;
+    this._element  = undefined;
+    this._id       = undefined;
+    this._type     = undefined;
+    this._opts     = undefined;
 
     if (!opts) {
         return this;
@@ -174,42 +174,86 @@ Charcoal.Admin.Widget.prototype.anim_out = function (callback) {
     return this;
 };
 
-Charcoal.Admin.Widget.prototype.reload = function (callback) {
-    var that = this;
+/**
+ * @param  {Boolean} [flag] - Whether to supress feedback (TRUE) or not (FALSE).
+ * @return {Boolean} Returns the feedback status.
+ */
+Charcoal.Admin.Widget.prototype.suppress_feedback = function (flag) {
+    console.log('♯ Widget.suppress_feedback:', flag)
+    if (typeof flag === 'boolean') {
+        Charcoal.Admin.Widget.prototype._feedback = !flag;
+    }
 
-    var url  = Charcoal.Admin.admin_url() + 'widget/load';
-    var data = {
-        widget_type:    that.widget_type || that.type(),
-        widget_options: that.widget_options()
-    };
+    return !Charcoal.Admin.Widget.prototype._feedback;
+};
+Charcoal.Admin.Widget.prototype._feedback = true;
+
+/**
+ * @param  {callable} callback - A routine to be called when the reload is resolved.
+ * @return {jqXHR} The The jQuery XMLHttpRequest object.
+ */
+Charcoal.Admin.Widget.prototype.reload = function (callback) {
+    var that = this,
+        url  = Charcoal.Admin.admin_url() + 'widget/load',
+        data = {
+            widget_type: that.widget_type || that.type(),
+            widget_options: that.widget_options()
+        },
+        request = {
+            type:        'POST',
+            url:         url,
+            data:        JSON.stringify(data),
+            dataType:    'json',
+            contentType: 'application/json'
+        },
+        middleware,
+        xhr;
 
     // Response from the reload action should always include a
     // widget_id and widget_html in order to work accordingly.
     // @todo add nice styles and stuffs.
-    $.ajax({
-        type:        'POST',
-        url:         url,
-        data:        JSON.stringify(data),
-        dataType:    'json',
-        contentType: 'application/json',
-        success: function (response) {
-            if (typeof response.widget_id === 'string') {
-                that.set_id(response.widget_id);
-                that.anim_out(function () {
-                    that.element().replaceWith(response.widget_html);
-                    that.set_element($('#' + that.id()));
+    xhr = $.ajax(request)
+        .then(this.response_parse.bind(this, widgetL10n.loadingFailed))
+        .done(this.response_done.bind(this))
+        .fail(this.response_fail.bind(this, widgetL10n.loadingFailed));
 
-                    // Pure dompe.
-                    that.element().hide().fadeIn();
-                    that.init();
-                });
-            }
-            // Callback
-            if (typeof callback === 'function') {
-                callback.call(that, response);
-            }
-        }
-    });
+    console.log('Middleware:', (callback instanceof jqXHRMiddleware), callback);
+    if (callback instanceof jqXHRMiddleware) {
+        middleware = callback;
+        callback   = null;
+        console.log('♯ ', middleware);
+        middleware.fire(xhr);
+    }
+
+    xhr.done(this.reloaded.bind(this, callback))
+       .always(this.response_always.bind(this));
+
+    return xhr;
+};
+
+/**
+ * @param {Callable} callback - A routine to be called when the reload is resolved.
+ * @param {Object}   response - The XHR response.
+ */
+Charcoal.Admin.Widget.prototype.reloaded = function (callback, response) {
+    var that = this;
+    if (typeof response.widget_id === 'string') {
+        that.set_id(response.widget_id);
+        that.anim_out(function () {
+            var $newWidget = $(response.widget_html).hide();
+
+            that.element().replaceWith($newWidget);
+            that.set_element($('#' + that.id()));
+
+            // Pure dompe.
+            that.element().fadeIn();
+            that.init();
+        });
+    }
+
+    if (typeof callback === 'function') {
+        callback.call(this, response);
+    }
 };
 
 /**
@@ -239,8 +283,8 @@ Charcoal.Admin.Widget.prototype.dialog = function (dialog_opts, callback) {
         showHeader: showHeader,
         showFooter: showFooter,
         onshown: function () {
-                Charcoal.Admin.manager().render();
-            }
+            Charcoal.Admin.manager().render();
+        }
     };
 
     var dialogOptions = $.extend({}, defaultOptions, userOptions);
@@ -281,18 +325,8 @@ Charcoal.Admin.Widget.prototype.dialog = function (dialog_opts, callback) {
             dataType: 'json'
         });
 
-        xhr.then(function (response, textStatus, jqXHR) {
-                if (!response || !response.success) {
-                    if (response.feedbacks) {
-                        return $.Deferred().reject(jqXHR, textStatus, response.feedbacks);
-                    } else {
-                        return $.Deferred().reject(jqXHR, textStatus, widgetL10n.loadingFailed);
-                    }
-                }
-
-                return $.Deferred().resolve(response, textStatus, jqXHR);
-            })
-            .done(function (response/*, textStatus, jqXHR*/) {
+        xhr.then(this.response_parse.bind(this, widgetL10n.loadingFailed))
+           .done(function (response/*, textStatus, jqXHR*/) {
                 dialog.setMessage(response.widget_html);
 
                 if (typeof callback === 'function') {
@@ -300,8 +334,8 @@ Charcoal.Admin.Widget.prototype.dialog = function (dialog_opts, callback) {
                 }
 
                 $('[data-toggle="tooltip"]', dialog.getModalBody()).tooltip();
-            })
-            .fail(function (jqXHR, textStatus, errorThrown) {
+           })
+           .fail(function (jqXHR, textStatus, errorThrown) {
                 dialog.setType(BootstrapDialog.TYPE_DANGER);
                 dialog.setMessage(widgetL10n.loadingFailed);
 
@@ -337,7 +371,7 @@ Charcoal.Admin.Widget.prototype.dialog = function (dialog_opts, callback) {
                 }
 
                 $('[data-toggle="tooltip"]', dialog.getModalBody()).tooltip();
-            });
+           });
 
         return $message;
     };
@@ -364,4 +398,56 @@ Charcoal.Admin.Widget.prototype.confirm = function (dialog_opts, confirmed_callb
     var opts = $.extend(defaults, dialog_opts);
 
     BootstrapDialog.confirm(opts);
+};
+
+Charcoal.Admin.Widget.prototype.response_parse = function (errorMessage, response, textStatus, jqXHR) {
+    console.log('♯ Widget.XHR.Parse'/*, arguments*/);
+    if (!response || !response.success || response.error) {
+        return $.Deferred().reject(jqXHR, textStatus, response.feedbacks || response.message || errorMessage);
+    }
+
+    return $.Deferred().resolve(response, textStatus, jqXHR);
+};
+
+Charcoal.Admin.Widget.prototype.response_done = function (response/* textStatus, jqXHR */) {
+    console.log('♯ Widget.XHR.Done'/*, arguments*/);
+    if (response.feedbacks) {
+        Charcoal.Admin.feedback(response.feedbacks);
+    }
+
+    if (response.next_url) {
+        // @todo "dynamise" the label
+        Charcoal.Admin.feedback().add_action({
+            label: commonL10n.continue,
+            callback: function () {
+                window.location.href = Charcoal.Admin.admin_url() + response.next_url;
+            }
+        });
+    }
+};
+
+Charcoal.Admin.Widget.prototype.response_fail = function (message, jqXHR, textStatus, errorThrown) {
+    console.log('♯ Widget.XHR.Fail'/*, arguments*/);
+    if (jqXHR.responseJSON && jqXHR.responseJSON.feedbacks) {
+        Charcoal.Admin.feedback(jqXHR.responseJSON.feedbacks);
+    } else {
+        var error = errorThrown || commonL10n.errorOccurred;
+
+        Charcoal.Admin.feedback([{
+            message: commonL10n.errorTemplate.replaceMap({
+                '[[ errorMessage ]]': message,
+                '[[ errorThrown ]]':  error
+            }),
+            level: 'error'
+        }]);
+    }
+};
+
+Charcoal.Admin.Widget.prototype.response_always = function (/*, .... */) {
+    console.log('♯ Widget.XHR.Always'/*, Charcoal.Admin.Widget.prototype._feedback, arguments*/);
+    if (Charcoal.Admin.Widget.prototype._feedback === true) {
+        Charcoal.Admin.feedback().dispatch();
+    } else {
+        Charcoal.Admin.Widget.prototype._feedback = true;
+    }
 };

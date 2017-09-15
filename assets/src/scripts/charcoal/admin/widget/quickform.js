@@ -16,7 +16,6 @@ Charcoal.Admin.Widget_Quick_Form = function (opts) {
     this.extra_form_data = opts.extra_form_data || {};
 
     this.form_working = false;
-    this.suppress_feedback = opts.suppress_feedback || false;
     this.is_new_object = false;
     this.xhr = null;
     this.obj_id = Charcoal.Admin.parseNumber(opts.obj_id) || 0;
@@ -92,10 +91,10 @@ Charcoal.Admin.Widget_Quick_Form.prototype.submit_form = function (form) {
     });
 
     this.xhr
-        .then($.proxy(this.request_done, this, $form, $trigger))
-        .done($.proxy(this.request_success, this, $form, $trigger))
-        .fail($.proxy(this.request_failed, this, $form, $trigger))
-        .always($.proxy(this.request_complete, this, $form, $trigger));
+        .then(this.request_parse.bind(this, commonL10n.errorOccurred))
+        .fail(this.request_fail.bind(this))
+        .done(this.request_done.bind(this, $form, $trigger))
+        .always(this.request_always.bind(this, $form, $trigger));
 };
 
 Charcoal.Admin.Widget_Quick_Form.prototype.disable_form = Charcoal.Admin.Widget_Form.prototype.disable_form;
@@ -104,14 +103,14 @@ Charcoal.Admin.Widget_Quick_Form.prototype.enable_form = Charcoal.Admin.Widget_F
 
 Charcoal.Admin.Widget_Quick_Form.prototype.request_url = Charcoal.Admin.Widget_Form.prototype.request_url;
 
-Charcoal.Admin.Widget_Quick_Form.prototype.request_done = Charcoal.Admin.Widget_Form.prototype.request_done;
+Charcoal.Admin.Widget_Quick_Form.prototype.request_parse = Charcoal.Admin.Widget_Form.prototype.request_parse;
 
-Charcoal.Admin.Widget_Quick_Form.prototype.request_failed = Charcoal.Admin.Widget_Form.prototype.request_failed;
+Charcoal.Admin.Widget_Quick_Form.prototype.request_fail = Charcoal.Admin.Widget_Form.prototype.request_fail;
 
-Charcoal.Admin.Widget_Quick_Form.prototype.request_complete = Charcoal.Admin.Widget_Form.prototype.request_complete;
+Charcoal.Admin.Widget_Quick_Form.prototype.request_always = Charcoal.Admin.Widget_Form.prototype.request_always;
 
-Charcoal.Admin.Widget_Quick_Form.prototype.request_success = function ($form, $trigger, response/* ... */) {
-    if (response.feedbacks && !this.suppress_feedback) {
+Charcoal.Admin.Widget_Quick_Form.prototype.request_done = function ($form, $trigger, response/* ... */) {
+    if (response.feedbacks && !this.suppress_feedback()) {
         Charcoal.Admin.feedback(response.feedbacks);
     }
 

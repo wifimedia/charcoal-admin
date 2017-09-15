@@ -5,6 +5,7 @@ module.exports = {
     admin: {
         src: [
             'assets/src/scripts/charcoal/admin/polyfill.js',
+            'assets/src/scripts/charcoal/admin/utility/*.js',
             'assets/src/scripts/charcoal/admin/charcoal.js',
             'assets/src/scripts/charcoal/admin/component_manager.js',
             'assets/src/scripts/charcoal/admin/feedback.js',
