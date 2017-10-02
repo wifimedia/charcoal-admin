@@ -53,11 +53,9 @@ trait NestedWidgetContainerTrait
     {
         $widget = $this->getWidget();
 
-        $GLOBALS['widget_template'] = $widget->template();
+        $this->setDynamicTemplate('nestedWidget', $this->widget->template());
 
         yield $widget;
-
-        $GLOBALS['widget_template'] = '';
     }
 
     /**
@@ -372,4 +370,13 @@ trait NestedWidgetContainerTrait
      * @return FactoryInterface
      */
     abstract protected function widgetFactory();
+
+    /**
+     * Add a dynamic template on-the-fly.
+     *
+     * @param string      $varName       The name of the variable to set this template unto.
+     * @param string|null $templateIdent The "dynamic template" to set. null to clear.
+     * @return void
+     */
+    abstract public function setDynamicTemplate($varName, $templateIdent);
 }
