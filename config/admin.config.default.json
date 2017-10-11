@@ -158,6 +158,9 @@
             },
             "user/reset-password": {
                 "ident": "charcoal/admin/script/user/reset-password"
+            }},
+            "system/clear-cache": {
+                "ident": "charcoal/admin/script/system/clear-cache"
             }
         }
     },

@@ -12,11 +12,14 @@ use Psr\Http\Message\ResponseInterface;
 // From Pimple
 use Pimple\Container;
 
-// Intra-module (`charcoal-admin`) dependencies
+// From 'charcoal-admin'
 use Charcoal\Admin\AdminAction;
+use Charcoal\Admin\Script\System\ClearCacheScript;
 
 /**
+ * API: Purge Cache
  *
+ * Also available as a {@see ClearCacheScript console command}.
  */
 class ClearCacheAction extends AdminAction
 {
@@ -26,7 +29,7 @@ class ClearCacheAction extends AdminAction
     private $cache;
 
     /**
-     * @param Container $container Pimple DI Container.
+     * @param  Container $container A service locator.
      * @return void
      */
     public function setDependencies(Container $container)
@@ -36,7 +39,7 @@ class ClearCacheAction extends AdminAction
     }
 
     /**
-     * @param CacheItemPoolInterface $cache A PSR-6 cache item pool.
+     * @param  CacheItemPoolInterface $cache A PSR-6 cache item pool.
      * @return void
      */
     private function setCache(CacheItemPoolInterface $cache)
@@ -54,32 +57,88 @@ class ClearCacheAction extends AdminAction
         $cacheType = $request->getParam('cache_type');
 
         if (!$cacheType) {
-            $this->addFeedback('error', $this->translator()->translate('Cache type not defined.'));
+            $this->addFeedback(
+                'error',
+                $this->translator()->translate('Cache type not defined.')
+            );
             $this->setSuccess(false);
             return $response->withStatus(400);
         }
 
-        if ($cacheType == 'global') {
-            $this->cache->clear();
-            $this->addFeedback('success', $this->translator()->translate('Cache cleared successfully.'));
-            $this->setSuccess(true);
-        } elseif ($cacheType == 'pages') {
-            $this->cache->deleteItem('request');
-            $this->cache->deleteItem('template');
-            $this->addFeedback('success', $this->translator()->translate('Pages cache cleared successfully.'));
-            $this->setSuccess(true);
-        } elseif ($cacheType == 'objects') {
-            $this->cache->deleteItem('object');
-            $this->cache->deleteItem('metadata');
-            $this->addFeedback('success', $this->translator()->translate('Objects cache cleared successfully.'));
-            $this->setSuccess(true);
-        } else {
-            $this->addFeedback('error', $this->translator()->translate(sprintf('Invalid cache type "%s"', $cacheType)));
-            $this->setSuccess(false);
-            return $response->withStatus(400);
+        switch ($cacheType) {
+            case 'global':
+                $this->setSuccess($this->clearGlobalCache());
+                return $response;
+
+            case 'pages':
+                $this->setSuccess($this->clearPageCache());
+                return $response;
+
+            case 'objects':
+                $this->setSuccess($this->clearObjectCache());
+                return $response;
         }
 
-        return $response;
+        $this->addFeedback('error', $this->translator()->translate(sprintf(
+            'Invalid cache type "%s"',
+            $cacheType
+        )));
+
+        $this->setSuccess(false);
+        return $response->withStatus(400);
+    }
+
+    /**
+     * Clear "global" cache.
+     *
+     * @return boolean
+     */
+    protected clearGlobalCache()
+    {
+        $this->cache->clear();
+
+        $this->addFeedback(
+            'success',
+            $this->translator()->translate('Cache cleared successfully.')
+        );
+
+        return true;
+    }
+
+    /**
+     * Clear "pages" cache.
+     *
+     * @return boolean
+     */
+    protected clearPageCache()
+    {
+        $this->cache->deleteItem('request');
+        $this->cache->deleteItem('template');
+
+        $this->addFeedback(
+            'success',
+            $this->translator()->translate('Pages cache cleared successfully.')
+        );
+
+        return true;
+    }
+
+    /**
+     * Clear "objects" cache.
+     *
+     * @return boolean
+     */
+    protected clearObjectCache()
+    {
+        $this->cache->deleteItem('object');
+        $this->cache->deleteItem('metadata');
+
+        $this->addFeedback(
+            'success',
+            $this->translator()->translate('Objects cache cleared successfully.')
+        );
+
+        return true;
     }
 
     /**
@@ -87,11 +146,9 @@ class ClearCacheAction extends AdminAction
      */
     public function results()
     {
-        $ret = [
+        return [
             'success'   => $this->success(),
             'feedbacks' => $this->feedbacks()
         ];
-
-        return $ret;
     }
 }
