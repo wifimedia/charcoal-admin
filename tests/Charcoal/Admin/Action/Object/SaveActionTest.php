@@ -1,88 +1,56 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Action\Object;
-
-// From PHPUnit
-use \PHPUnit_Framework_TestCase;
-
-// From Pimple
-use \Pimple\Container;
-
-// From Slim
-use \Slim\Http\Environment;
-use \Slim\Http\Request;
-use \Slim\Http\Response;
+namespace Charcoal\Tests\Admin\Action\Object;
 
 // From 'charcoal-admin'
-use \Charcoal\Admin\Action\Object\SaveAction;
-use \Charcoal\Admin\User;
+use Charcoal\Admin\Action\Object\SaveAction;
+use Charcoal\Tests\Admin\Action\AbstractActionTestCase;
+use Charcoal\Tests\InteractsWithUserTrait;
 
-use \Charcoal\Admin\Tests\ContainerProvider;
-
-/**
- *
- */
-class SaveActionTest extends PHPUnit_Framework_TestCase
+class SaveActionTest extends AbstractActionTestCase
 {
-    /**
-     * Tested Class.
-     *
-     * @var SaveAction
-     */
-    private $obj;
+    use InteractsWithUserTrait;
 
     /**
-     * Store the service container.
-     *
-     * @var Container
+     * @covers \Charcoal\Admin\Action\Object\SaveAction::authRequired
      */
-    private $container;
-
-    /**
-     * Set up the test.
-     */
-    public function setUp()
+    public function testAuthRequired()
     {
-        $container = $this->container();
-
-        $this->obj = new SaveAction([
-            'logger'    => $container['logger'],
-            'container' => $container
-        ]);
+        $action = $this->createTestAction();
+        $this->assertTrue($action->authRequired());
     }
 
-    public function testAuthRequiredIsTrue()
-    {
-        $this->assertTrue($this->obj->authRequired());
-    }
-
+    /**
+     * @covers \Charcoal\Admin\Action\Object\SaveAction::run
+     * @covers \Charcoal\Admin\Action\Object\SaveAction::setData
+     * @covers \Charcoal\Admin\Action\Object\SaveAction::setSaveData
+     * @covers \Charcoal\Admin\Action\Object\SaveAction::saveData
+     */
     public function testRunWithoutObjTypeIs400()
     {
-        $request  = Request::createFromEnvironment(Environment::mock());
-        $response = new Response();
+        $action   = $this->createTestAction();
+        $request  = $this->createTestRequest();
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(400, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertFalse($results['success']);
     }
 
     /**
-     * Set up the service container.
+     * Create Admin Action for testing.
      *
-     * @return Container
+     * @return SaveAction
      */
-    private function container()
+    final protected function createTestAction()
     {
-        if ($this->container === null) {
-            $container = new Container();
-            $containerProvider = new ContainerProvider();
-            $containerProvider->registerActionDependencies($container);
+        $container = $this->getContainer();
 
-            $this->container = $container;
-        }
-
-        return $this->container;
+        return new SaveAction([
+            'logger'    => $container['logger'],
+            'container' => $container
+        ]);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Charcoal\Admin\Tests;
+namespace Charcoal\Tests\Admin;
 
 // From PHPUnit
 use PHPUnit_Framework_TestCase;
@@ -10,7 +10,7 @@ use Pimple\Container;
 
 // From 'charcoal-admin'
 use Charcoal\Admin\AdminWidget;
-use Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 /**
  *

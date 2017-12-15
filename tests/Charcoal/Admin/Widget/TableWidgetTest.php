@@ -1,18 +1,18 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Widget;
+namespace Charcoal\Tests\Admin\Widget;
 
 // From PHPUnit
-use \PHPUnit_Framework_TestCase;
+use PHPUnit_Framework_TestCase;
 
 use Psr\Log\NullLogger;
 
 // From Pimple
-use \Pimple\Container;
+use Pimple\Container;
 
 // From 'charcoal-admin'
 use Charcoal\Admin\Widget\TableWidget;
-use Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 /**
  *

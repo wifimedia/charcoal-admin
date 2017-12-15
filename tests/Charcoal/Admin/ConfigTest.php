@@ -1,8 +1,8 @@
 <?php
 
-namespace Charcoal\Admin\Tests;
+namespace Charcoal\Tests\Admin;
 
-use \Charcoal\Admin\Config;
+use Charcoal\Admin\Config;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {

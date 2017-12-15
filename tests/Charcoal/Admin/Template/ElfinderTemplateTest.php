@@ -1,6 +1,6 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Template;
+namespace Charcoal\Tests\Admin\Template;
 
 use ReflectionClass;
 
@@ -12,7 +12,7 @@ use Pimple\Container;
 
 // From 'charcoal-admin'
 use Charcoal\Admin\Template\ElfinderTemplate;
-use Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 /**
  *

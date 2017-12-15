@@ -1,5 +1,5 @@
 <?php
-namespace Charcoal\Admin\Tests\Template\Object;
+namespace Charcoal\Tests\Admin\Template\Object;
 
 use ReflectionClass;
 
@@ -11,7 +11,7 @@ use Pimple\Container;
 
 // From 'charcoal-admin'
 use Charcoal\Admin\Template\Object\EditTemplate;
-use Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 /**
  *

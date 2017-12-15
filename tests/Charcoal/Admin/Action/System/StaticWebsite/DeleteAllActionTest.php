@@ -1,93 +1,51 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Action\System\StaticWebsite;
-
-// From PHPUnit
-use PHPUnit_Framework_TestCase;
-
-// From Pimple
-use Pimple\Container;
-
-// From Slim
-use Slim\Http\Environment;
-use Slim\Http\Request;
-use Slim\Http\Response;
+namespace Charcoal\Tests\Admin\Action\System\StaticWebsite;
 
 // From 'charcoal-admin'
 use Charcoal\Admin\Action\System\StaticWebsite\DeleteAllAction;
+use Charcoal\Tests\Admin\Action\AbstractActionTestCase;
 
-use Charcoal\Admin\Tests\ContainerProvider;
-use Charcoal\Admin\Tests\Mock\UserProviderTrait;
-
-/**
- *
- */
-class DeleteAllActionTest extends PHPUnit_Framework_TestCase
+class DeleteAllActionTest extends AbstractActionTestCase
 {
-    use UserProviderTrait;
-
     /**
-     * Tested Class.
-     *
-     * @var DeleteAllAction
+     * @covers \Charcoal\Admin\Action\System\StaticWebsite\DeleteAllAction::authRequired
      */
-    private $obj;
-
-    /**
-     * Store the service container.
-     *
-     * @var Container
-     */
-    private $container;
-
-    /**
-     * Set up the test.
-     */
-    public function setUp()
+    public function testAuthRequired()
     {
-        $container = $this->container();
-        $containerProvider = new ContainerProvider();
-        $containerProvider->registerActionDependencies($container);
-
-        $this->obj = new DeleteAllAction([
-            'logger'    => $container['logger'],
-            'container' => $container
-        ]);
+        $action = $this->createTestAction();
+        $this->assertTrue($action->authRequired());
     }
 
-    public function testAuthRequiredIsTrue()
-    {
-        $this->assertTrue($this->obj->authRequired());
-    }
-
+    /**
+     * @covers \Charcoal\Admin\Action\System\StaticWebsite\DeleteAllAction::run
+     * @covers \Charcoal\Admin\Action\System\StaticWebsite\DeleteAllAction::recursiveDelete
+     */
     public function testRun()
     {
-        $request  = Request::createFromEnvironment(Environment::mock());
-        $response = new Response();
+        $action   = $this->createTestAction();
+        $request  = $this->createTestRequest();
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(200, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertTrue($results['success']);
     }
 
     /**
-     * Set up the service container.
+     * Create Admin Action for testing.
      *
-     * @return Container
+     * @return DeleteAllAction
      */
-    private function container()
+    final protected function createTestAction()
     {
-        if ($this->container === null) {
-            $container = new Container();
-            $containerProvider = new ContainerProvider();
-            $containerProvider->registerAdminServices($container);
-            $containerProvider->registerCollectionLoader($container);
+        $container = $this->getContainer();
 
-            $this->container = $container;
-        }
-
-        return $this->container;
+        return new DeleteAllAction([
+            'logger'    => $container['logger'],
+            'container' => $container
+        ]);
     }
 }

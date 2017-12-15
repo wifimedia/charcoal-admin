@@ -1,8 +1,8 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Widget;
+namespace Charcoal\Tests\Admin\Widget;
 
-use \Charcoal\Admin\Widget\Graph\AbstractGraphWidget;
+use Charcoal\Admin\Widget\Graph\AbstractGraphWidget;
 
 class GraphWidgetTest extends \PHPUnit_Framework_TestCase
 {

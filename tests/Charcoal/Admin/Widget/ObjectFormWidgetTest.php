@@ -1,8 +1,8 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Widget;
+namespace Charcoal\Tests\Admin\Widget;
 
-use \Charcoal\Admin\Widget\ObjectFormWidget;
+use Charcoal\Admin\Widget\ObjectFormWidget;
 
 class ObjectFormWidgetTest extends \PHPUnit_Framework_TestCase
 {

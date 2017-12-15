@@ -1,111 +1,87 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Action;
-
-// From PHPUnit
-use \PHPUnit_Framework_TestCase;
-
-// From Pimple
-use \Pimple\Container;
-
-// From Slim
-use \Slim\Http\Environment;
-use \Slim\Http\Request;
-use \Slim\Http\Response;
+namespace Charcoal\Tests\Admin\Action;
 
 // From 'charcoal-admin'
-use \Charcoal\Admin\Action\LogoutAction;
+use Charcoal\Admin\Action\LogoutAction;
+use Charcoal\Tests\Admin\Action\AbstractActionTestCase;
+use Charcoal\Tests\InteractsWithUserTrait;
 
-use \Charcoal\Admin\Tests\ContainerProvider;
-use \Charcoal\Admin\Tests\Mock\UserProviderTrait;
-
-/**
- *
- */
-class LogoutActionTest extends PHPUnit_Framework_TestCase
+class LogoutActionTest extends AbstractActionTestCase
 {
-    use UserProviderTrait;
+    use InteractsWithUserTrait;
 
     /**
-     * Tested Class.
-     *
-     * @var LogoutAction
-     */
-    private $obj;
-
-    /**
-     * Store the service container.
-     *
-     * @var Container
-     */
-    private $container;
-
-    /**
-     * Set up the test.
+     * Kill user session.
      */
     public function setUp()
     {
         if (session_id()) {
             session_unset();
         }
-
-        $container = $this->container();
-        $this->obj = new LogoutAction([
-            'logger'    => $container['logger'],
-            'container' => $container
-        ]);
     }
 
-    public function testAuthRequiredIsTrue()
+    /**
+     * @covers \Charcoal\Admin\Action\LogoutAction::authRequired
+     */
+    public function testAuthRequired()
     {
-        $this->assertTrue($this->obj->authRequired());
+        $action = $this->createTestAction();
+        $this->assertTrue($action->authRequired());
     }
 
+    /**
+     * @covers \Charcoal\Admin\Action\LogoutAction::run
+     */
     public function testRunWithUnauthenticatedUser()
     {
+        $action = $this->createTestAction();
+
         $this->createUser('foo');
 
-        $request  = Request::createFromEnvironment(Environment::mock());
-        $response = new Response();
+        $request  = $this->createTestRequest();
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(500, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertFalse($results['success']);
     }
 
+    /**
+     * @covers \Charcoal\Admin\Action\LogoutAction::run
+     * @covers \Charcoal\Admin\Action\LogoutAction::deleteUserAuthTokens
+     */
     public function testRunWithAuthenticatedUser()
     {
+        $action = $this->createTestAction();
+
         $user = $this->createUser('foo');
         $user->login();
 
-        $request  = Request::createFromEnvironment(Environment::mock());
-        $response = new Response();
+        $request  = $this->createTestRequest();
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(200, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertTrue($results['success']);
     }
 
     /**
-     * Set up the service container.
+     * Create Admin Action for testing.
      *
-     * @return Container
+     * @return LogoutAction
      */
-    private function container()
+    final protected function createTestAction()
     {
-        if ($this->container === null) {
-            $container = new Container();
-            $containerProvider = new ContainerProvider();
-            $containerProvider->registerAdminServices($container);
-            $containerProvider->registerCollectionLoader($container);
+        $container = $this->getContainer();
 
-            $this->container = $container;
-        }
-
-        return $this->container;
+        return new LogoutAction([
+            'logger'    => $container['logger'],
+            'container' => $container
+        ]);
     }
 }

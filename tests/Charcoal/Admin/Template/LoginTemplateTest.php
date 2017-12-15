@@ -1,14 +1,14 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Template;
+namespace Charcoal\Tests\Admin\Template;
 
-use \ReflectionClass;
+use ReflectionClass;
 
-use \Psr\Log\NullLogger;
+use Psr\Log\NullLogger;
 
-use \PHPUnit_Framework_TestCase;
+use PHPUnit_Framework_TestCase;
 
-use \Charcoal\Admin\Template\LoginTemplate;
+use Charcoal\Admin\Template\LoginTemplate;
 
 /**
  *

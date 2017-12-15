@@ -1,93 +1,64 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Action\System;
+namespace Charcoal\Tests\Admin\Action\System;
 
-// From PHPUnit
-use PHPUnit_Framework_TestCase;
-
-// From Pimple
-use Pimple\Container;
-
-// From Slim
-use Slim\Http\Environment;
-use Slim\Http\Request;
-use Slim\Http\Response;
+// From PSR-6
+use Psr\Cache\CacheItemPoolInterface;
 
 // From 'charcoal-admin'
 use Charcoal\Admin\Action\System\ClearCacheAction;
+use Charcoal\Tests\Admin\Action\AbstractActionTestCase;
 
-use Charcoal\Admin\Tests\ContainerProvider;
-use Charcoal\Admin\Tests\Mock\UserProviderTrait;
-
-/**
- *
- */
-class ClearCacheActionTest extends PHPUnit_Framework_TestCase
+class ClearCacheActionTest extends AbstractActionTestCase
 {
-    use UserProviderTrait;
-
     /**
-     * Tested Class.
-     *
-     * @var ClearCacheAction
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::authRequired
      */
-    private $obj;
-
-    /**
-     * Store the service container.
-     *
-     * @var Container
-     */
-    private $container;
-
-    /**
-     * Set up the test.
-     */
-    public function setUp()
+    public function testAuthRequired()
     {
-        $container = $this->container();
-        $containerProvider = new ContainerProvider();
-        $containerProvider->registerActionDependencies($container);
-
-        $this->obj = new ClearCacheAction([
-            'logger'    => $container['logger'],
-            'container' => $container
-        ]);
+        $action = $this->createTestAction();
+        $this->assertTrue($action->authRequired());
     }
 
-    public function testAuthRequiredIsTrue()
-    {
-        $this->assertTrue($this->obj->authRequired());
-    }
-
+    /**
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::run
+     */
     public function testRun()
     {
-        $request  = Request::createFromEnvironment(Environment::mock());
-        $response = new Response();
+        $action   = $this->createTestAction();
+        $request  = $this->createTestRequest();
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(400, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertFalse($results['success']);
     }
 
     /**
-     * Set up the service container.
-     *
-     * @return Container
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::$cache
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::setCache
      */
-    private function container()
+    public function testCachePresent()
     {
-        if ($this->container === null) {
-            $container = new Container();
-            $containerProvider = new ContainerProvider();
-            $containerProvider->registerAdminServices($container);
-            $containerProvider->registerCollectionLoader($container);
+        $action  = $this->createTestAction();
+        $service = $this->getPropertyValue($action, 'cache');
+        $this->assertInstanceOf(CacheItemPoolInterface::class, $service);
+    }
 
-            $this->container = $container;
-        }
+    /**
+     * Create Admin Action for testing.
+     *
+     * @return ClearCacheAction
+     */
+    final protected function createTestAction()
+    {
+        $container = $this->getContainer();
 
-        return $this->container;
+        return new ClearCacheAction([
+            'logger'    => $container['logger'],
+            'container' => $container
+        ]);
     }
 }

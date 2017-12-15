@@ -1,17 +1,17 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Mock;
+namespace Charcoal\Tests;
 
 // From 'charcoal-admin'
-use \Charcoal\User\UserInterface;
+use Charcoal\User\UserInterface;
 
 // From 'charcoal-admin'
-use \Charcoal\Admin\User;
+use Charcoal\Admin\User;
 
 /**
  * User Testing Helpers
  */
-trait UserProviderTrait
+trait InteractsWithUserTrait
 {
     /**
      * User model class name.
@@ -26,7 +26,7 @@ trait UserProviderTrait
     /**
      * Create a user model and save it into storage.
      *
-     * @param  [type] $username The user's handle and primary key.
+     * @param  string $username The user's handle and primary key.
      * @param  string $password The user's password.
      * @param  string $email    The user's email address.
      * @return UserInterface
@@ -36,7 +36,7 @@ trait UserProviderTrait
         $password = 'qwerty',
         $email = 'foo@example.com'
     ) {
-        $container = $this->container();
+        $container = $this->getContainer();
 
         $user = $container['model/factory']->create($this->userClass);
         $user->setData([
@@ -51,9 +51,15 @@ trait UserProviderTrait
         return $user;
     }
 
+    /**
+     * Determine if a exists given its handle.
+     *
+     * @param  string $username The user's handle and primary key.
+     * @return boolean
+     */
     protected function userExists($username)
     {
-        $container = $this->container();
+        $container = $this->getContainer();
 
         $user = $container['model/factory']->create($this->userClass);
         $user->load($username);
@@ -62,9 +68,9 @@ trait UserProviderTrait
     }
 
     /**
-     * Set up the service container.
+     * Get the service locator.
      *
-     * @return Container
+     * @return \Pimple\Container
      */
-    abstract function container();
+    abstract protected function getContainer();
 }

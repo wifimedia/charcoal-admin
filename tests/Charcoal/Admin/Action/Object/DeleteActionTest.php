@@ -1,147 +1,123 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Action\Object;
-
-// From PHPUnit
-use PHPUnit_Framework_TestCase;
-
-// From Pimple
-use Pimple\Container;
-
-// From Slim
-use Slim\Http\Environment;
-use Slim\Http\Request;
-use Slim\Http\Response;
+namespace Charcoal\Tests\Admin\Action\Object;
 
 // From 'charcoal-admin'
 use Charcoal\Admin\Action\Object\DeleteAction;
+use Charcoal\Tests\Admin\Action\AbstractActionTestCase;
+use Charcoal\Tests\InteractsWithUserTrait;
 
-use Charcoal\Admin\Tests\ContainerProvider;
-use Charcoal\Admin\Tests\Mock\UserProviderTrait;
-
-/**
- *
- */
-class DeleteActionTest extends PHPUnit_Framework_TestCase
+class DeleteActionTest extends AbstractActionTestCase
 {
-    use UserProviderTrait;
+    use InteractsWithUserTrait;
 
     /**
-     * Tested Class.
-     *
-     * @var DeleteAction
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::authRequired
      */
-    private $obj;
-
-    /**
-     * Store the service container.
-     *
-     * @var Container
-     */
-    private $container;
-
-    /**
-     * Set up the test.
-     */
-    public function setUp()
+    public function testAuthRequired()
     {
-        $container = $this->container();
-        $containerProvider = new ContainerProvider();
-        $containerProvider->registerActionDependencies($container);
-
-        $this->obj = new DeleteAction([
-            'logger'    => $container['logger'],
-            'container' => $container
-        ]);
+        $action = $this->createTestAction();
+        $this->assertTrue($action->authRequired());
     }
 
-    public function testAuthRequiredIsTrue()
-    {
-        $this->assertTrue($this->obj->authRequired());
-    }
-
+    /**
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::run
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::results
+     */
     public function testRunWithoutObjTypeIs400()
     {
-        $request  = Request::createFromEnvironment(Environment::mock());
-        $response = new Response();
+        $action   = $this->createTestAction();
+        $request  = $this->createTestRequest();
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(400, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertFalse($results['success']);
     }
 
+    /**
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::run
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::results
+     */
     public function testRunWithoutObjIdIs400()
     {
-        $request = Request::createFromEnvironment(Environment::mock([
+        $action   = $this->createTestAction();
+        $request  = $this->createTestRequest([
             'QUERY_STRING' => 'obj_type=charcoal/admin/user'
-        ]));
-        $response = new Response();
+        ]);
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(400, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertFalse($results['success']);
     }
 
+    /**
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::run
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::results
+     */
     public function testRunWithInvalidObject()
     {
-        $objId = 'foobar';
-        $user  = $this->createUser($objId);
+        $action = $this->createTestAction();
+        $objId  = 'foobar';
+        $user   = $this->createUser($objId);
         $this->assertTrue($this->userExists($objId));
 
-        $request = Request::createFromEnvironment(Environment::mock([
+        $request  = $this->createTestRequest([
             'QUERY_STRING' => 'obj_type=charcoal/admin/user&obj_id=bazqux'
-        ]));
-        $response = new Response();
+        ]);
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(404, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertFalse($results['success']);
 
         $this->assertTrue($this->userExists($objId));
     }
 
+    /**
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::run
+     * @covers \Charcoal\Admin\Action\Object\DeleteAction::results
+     */
     public function testRunWithObjectDelete()
     {
-        $objId = 'foobar';
-        $user = $this->createUser($objId);
+        $action = $this->createTestAction();
+        $objId  = 'foobar';
+        $user   = $this->createUser($objId);
         $this->assertTrue($this->userExists($objId));
 
-        $request = Request::createFromEnvironment(Environment::mock([
+        $request  = $this->createTestRequest([
             'QUERY_STRING' => 'obj_type=charcoal/admin/user&obj_id='.$objId
-        ]));
-        $response = new Response();
+        ]);
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(200, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertTrue($results['success']);
 
         $this->assertFalse($this->userExists($objId));
     }
 
     /**
-     * Set up the service container.
+     * Create Admin Action for testing.
      *
-     * @return Container
+     * @return DeleteAction
      */
-    private function container()
+    final protected function createTestAction()
     {
-        if ($this->container === null) {
-            $container = new Container();
-            $containerProvider = new ContainerProvider();
-            $containerProvider->registerAdminServices($container);
-            $containerProvider->registerCollectionLoader($container);
+        $container = $this->getContainer();
 
-            $this->container = $container;
-        }
-
-        return $this->container;
+        return new DeleteAction([
+            'logger'    => $container['logger'],
+            'container' => $container
+        ]);
     }
 }

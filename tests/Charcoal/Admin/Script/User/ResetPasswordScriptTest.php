@@ -1,27 +1,27 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Script\User;
+namespace Charcoal\Tests\Admin\Script\User;
 
-use \PDO;
+use PDO;
 
-use \PHPUnit_Framework_TestCase;
+use PHPUnit_Framework_TestCase;
 
-use \Psr\Log\NullLogger;
-use \Cache\Adapter\Void\VoidCachePool;
+use Psr\Log\NullLogger;
+use Cache\Adapter\Void\VoidCachePool;
 
-use \Psr\Http\Message\RequestInterface;
-use \Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
-use \Pimple\Container;
+use Pimple\Container;
 
-use \Charcoal\Factory\GenericFactory as Factory;
+use Charcoal\Factory\GenericFactory as Factory;
 
-use \Charcoal\Model\Service\MetadataLoader;
-use \Charcoal\Source\DatabaseSource;
+use Charcoal\Model\Service\MetadataLoader;
+use Charcoal\Source\DatabaseSource;
 
-use \Charcoal\Admin\Script\User\ResetPasswordScript;
+use Charcoal\Admin\Script\User\ResetPasswordScript;
 
-use \Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 /**
  *

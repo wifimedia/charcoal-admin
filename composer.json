@@ -59,7 +59,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Charcoal\\Admin\\Tests\\": "tests/Charcoal/Admin"
+            "Charcoal\\Tests\\": "tests/Charcoal"
         }
     },
     "scripts": {

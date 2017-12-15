@@ -1,6 +1,6 @@
 <?php
 
-namespace Charcoal\Admin\Tests;
+namespace Charcoal\Tests\Admin;
 
 use PHPUnit_Framework_TestCase;
 
@@ -12,7 +12,7 @@ use Charcoal\Admin\Service\Exporter;
 
 use Charcoal\Factory\GenericFactory;
 
-use Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 class ExporterTest extends PHPUnit_Framework_TestCase
 {

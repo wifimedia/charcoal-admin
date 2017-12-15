@@ -1,6 +1,6 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Script\Notification;
+namespace Charcoal\Tests\Admin\Script\Notification;
 
 use DateTime;
 use ReflectionClass;
@@ -10,7 +10,7 @@ use PHPUnit_Framework_TestCase;
 use Pimple\Container;
 
 use Charcoal\Admin\Script\Notification\ProcessMinuteScript;
-use Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 /**
  *

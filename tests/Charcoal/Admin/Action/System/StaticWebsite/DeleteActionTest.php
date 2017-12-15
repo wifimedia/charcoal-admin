@@ -1,74 +1,35 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Action\System\StaticWebsite;
-
-// From PHPUnit
-use PHPUnit_Framework_TestCase;
-
-// From Pimple
-use Pimple\Container;
-
-// From Slim
-use Slim\Http\Environment;
-use Slim\Http\Request;
-use Slim\Http\Response;
+namespace Charcoal\Tests\Admin\Action\System\StaticWebsite;
 
 // From 'charcoal-admin'
 use Charcoal\Admin\Action\System\StaticWebsite\DeleteAction;
+use Charcoal\Tests\Admin\Action\AbstractActionTestCase;
 
-use Charcoal\Admin\Tests\ContainerProvider;
-use Charcoal\Admin\Tests\Mock\UserProviderTrait;
-
-/**
- *
- */
-class DeleteActionTest extends PHPUnit_Framework_TestCase
+class DeleteActionTest extends AbstractActionTestCase
 {
-    use UserProviderTrait;
-
     /**
-     * Tested Class.
-     *
-     * @var DeleteAction
+     * @covers \Charcoal\Admin\Action\System\StaticWebsite\DeleteAction::authRequired
      */
-    private $obj;
-
-    /**
-     * Store the service container.
-     *
-     * @var Container
-     */
-    private $container;
-
-    /**
-     * Set up the test.
-     */
-    public function setUp()
+    public function testAuthRequired()
     {
-        $container = $this->container();
-        $containerProvider = new ContainerProvider();
-        $containerProvider->registerActionDependencies($container);
-
-        $this->obj = new DeleteAction([
-            'logger'    => $container['logger'],
-            'container' => $container
-        ]);
+        $action = $this->createTestAction();
+        $this->assertTrue($action->authRequired());
     }
 
-    public function testAuthRequiredIsTrue()
-    {
-        $this->assertTrue($this->obj->authRequired());
-    }
-
+    /**
+     * @covers \Charcoal\Admin\Action\System\StaticWebsite\DeleteAction::run
+     */
     public function testRun()
     {
-        $request  = Request::createFromEnvironment(Environment::mock());
-        $response = new Response();
+        $action   = $this->createTestAction();
+        $request  = $this->createTestRequest();
+        $response = $this->createTestResponse();
 
-        $response = $this->obj->run($request, $response);
+        $response = $action->run($request, $response);
         $this->assertEquals(404, $response->getStatusCode());
 
-        $results = $this->obj->results();
+        $results = $action->results();
         $this->assertFalse($results['success']);
     }
 
@@ -89,5 +50,20 @@ class DeleteActionTest extends PHPUnit_Framework_TestCase
         }
 
         return $this->container;
+    }
+
+    /**
+     * Create Admin Action for testing.
+     *
+     * @return DeleteAction
+     */
+    final protected function createTestAction()
+    {
+        $container = $this->getContainer();
+
+        return new DeleteAction([
+            'logger'    => $container['logger'],
+            'container' => $container
+        ]);
     }
 }

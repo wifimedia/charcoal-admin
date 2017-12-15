@@ -104,6 +104,7 @@ class ResetPasswordAction extends AdminAction
 
             return $response->withStatus(400);
         }
+
         if (!$this->validateCaptcha($recaptchaValue)) {
             $this->addFeedback('error', $this->translator()->translate('Invalid or malformed CAPTCHA response.'));
             $this->setSuccess(false);

@@ -1,103 +1,114 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Property\Input;
+namespace Charcoal\Tests\Admin\Property\Input;
 
-use \PHPUnit_Framework_TestCase;
+use Charcoal\Admin\Property\Input\TextInput;
+use Charcoal\Tests\Admin\Property\AbstractInputTestCase;
 
-use \Pimple\Container;
-
-use \Charcoal\Admin\Property\Input\TextInput;
-
-use \Charcoal\Admin\Tests\ContainerProvider;
-
-class TextInputTest extends PHPUnit_Framework_TestCase
+class TextInputTest extends AbstractInputTestCase
 {
-    private $obj;
-
-    public function setUp()
-    {
-//        $container = $GLOBALS['container'];
-        $container = new Container();
-        $containerProvider = new ContainerProvider();
-        $containerProvider->registerTranslator($container);
-        $containerProvider->registerLogger($container);
-        $containerProvider->registerMetadataLoader($container);
-        $container['view'] = $this->createMock('\Charcoal\View\ViewInterface');
-
-        $this->obj = new TextInput([
-            'logger' => $container['logger'],
-            'metadata_loader' => $container['metadata/loader'],
-            'container' => $container
-        ]);
-    }
-
     public function testSetData()
     {
-        $obj = $this->obj;
-        $ret = $obj->setData([
+        $prop = $this->createTestPropertyInput();
+        $ret  = $prop->setData([
             'size'        => 42,
             'min_length'  => 10,
             'max_length'  => 100,
             'pattern'     => 'foo',
             'placeholder' => 'bar'
         ]);
-        $this->assertSame($ret, $obj);
-        $this->assertEquals(42, $obj->size());
-        $this->assertEquals(10, $obj->minLength());
-        $this->assertEquals(100, $obj->maxLength());
-        $this->assertEquals('foo', (string)$obj->pattern());
-        $this->assertEquals('bar', (string)$obj->placeholder());
+        $this->assertSame($prop, $ret);
+        $this->assertEquals(42, $prop->size());
+        $this->assertEquals(10, $prop->minLength());
+        $this->assertEquals(100, $prop->maxLength());
+        $this->assertEquals('foo', (string)$prop->pattern());
+        $this->assertEquals('bar', (string)$prop->placeholder());
     }
 
+    /**
+     * @covers \Charcoal\Admin\Property\Input\TextInput::size
+     * @covers \Charcoal\Admin\Property\Input\TextInput::setSize
+     */
     public function testSetSize()
     {
-        $obj = $this->obj;
-        $ret = $obj->setSize(42);
-        $this->assertSame($ret, $obj);
-        $this->assertEquals(42, $obj->size());
+        $prop = $this->createTestPropertyInput();
+        $ret  = $prop->setSize(42);
+        $this->assertSame($ret, $prop);
+        $this->assertEquals(42, $prop->size());
 
         $this->setExpectedException('\InvalidArgumentException');
-        $obj->setSize(false);
+        $prop->setSize(false);
     }
 
+    /**
+     * @covers \Charcoal\Admin\Property\Input\TextInput::minLength
+     * @covers \Charcoal\Admin\Property\Input\TextInput::setMinLength
+     */
     public function testSetMinLength()
     {
-        $obj = $this->obj;
-        $ret = $obj->setMinLength(42);
-        $this->assertSame($ret, $obj);
-        $this->assertEquals(42, $obj->minLength());
+        $prop = $this->createTestPropertyInput();
+        $ret  = $prop->setMinLength(42);
+        $this->assertSame($ret, $prop);
+        $this->assertEquals(42, $prop->minLength());
 
         $this->setExpectedException('\InvalidArgumentException');
-        $obj->setMinLength(false);
+        $prop->setMinLength(false);
     }
 
+    /**
+     * @covers \Charcoal\Admin\Property\Input\TextInput::maxLength
+     * @covers \Charcoal\Admin\Property\Input\TextInput::setMaxLength
+     */
     public function testSetMaxLength()
     {
-        $obj = $this->obj;
-        $ret = $obj->setMaxLength(42);
-        $this->assertSame($ret, $obj);
-        $this->assertEquals(42, $obj->maxLength());
+        $prop = $this->createTestPropertyInput();
+        $ret  = $prop->setMaxLength(42);
+        $this->assertSame($ret, $prop);
+        $this->assertEquals(42, $prop->maxLength());
 
         $this->setExpectedException('\InvalidArgumentException');
-        $obj->setMaxLength(false);
+        $prop->setMaxLength(false);
     }
 
+    /**
+     * @covers \Charcoal\Admin\Property\Input\TextInput::pattern
+     * @covers \Charcoal\Admin\Property\Input\TextInput::setPattern
+     */
     public function testSetPattern()
     {
-        $obj = $this->obj;
-        $ret = $obj->setPattern('foo');
-        $this->assertSame($ret, $obj);
-        $this->assertEquals('foo', $obj->pattern());
+        $prop = $this->createTestPropertyInput();
+        $ret  = $prop->setPattern('foo');
+        $this->assertSame($ret, $prop);
+        $this->assertEquals('foo', $prop->pattern());
 
         $this->setExpectedException('\InvalidArgumentException');
-        $obj->setPattern(false);
+        $prop->setPattern(false);
     }
 
+    /**
+     * @covers \Charcoal\Admin\Property\Input\TextInput::placeholder
+     * @covers \Charcoal\Admin\Property\Input\TextInput::setPlaceholder
+     */
     public function testSetPlaceholder()
     {
-        $obj = $this->obj;
-        $ret = $obj->setPlaceholder('foo');
-        $this->assertSame($ret, $obj);
-        $this->assertEquals('foo', (string)$obj->placeholder());
+        $prop = $this->createTestPropertyInput();
+        $ret  = $prop->setPlaceholder('foo');
+        $this->assertSame($ret, $prop);
+        $this->assertEquals('foo', (string)$prop->placeholder());
+    }
+
+    /**
+     * Create Admin Property Input for testing.
+     *
+     * @return TextInput
+     */
+    final protected function createTestPropertyInput()
+    {
+        $container = $this->getContainer();
+
+        return new TextInput([
+            'logger'    => $container['logger'],
+            'container' => $container
+        ]);
     }
 }

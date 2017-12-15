@@ -1,10 +1,10 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Widget;
+namespace Charcoal\Tests\Admin\Widget;
 
-use \Psr\Log\NullLogger;
+use Psr\Log\NullLogger;
 
-use \Charcoal\Admin\Widget\SearchWidget;
+use Charcoal\Admin\Widget\SearchWidget;
 
 class SearchWidgetTest extends \PHPUnit_Framework_TestCase
 {

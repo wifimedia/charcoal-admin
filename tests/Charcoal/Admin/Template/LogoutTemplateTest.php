@@ -1,12 +1,12 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Template;
+namespace Charcoal\Tests\Admin\Template;
 
-use \Psr\Log\NullLogger;
+use Psr\Log\NullLogger;
 
-use \PHPUnit_Framework_TestCase;
+use PHPUnit_Framework_TestCase;
 
-use \Charcoal\Admin\Template\LogoutTemplate;
+use Charcoal\Admin\Template\LogoutTemplate;
 
 /**
  *

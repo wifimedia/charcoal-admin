@@ -1,14 +1,14 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Template\Account;
+namespace Charcoal\Tests\Admin\Template\Account;
 
-use \ReflectionClass;
+use ReflectionClass;
 
-use \Psr\Log\NullLogger;
+use Psr\Log\NullLogger;
 
-use \PHPUnit_Framework_TestCase;
+use PHPUnit_Framework_TestCase;
 
-use \Charcoal\Admin\Template\Account\LostPasswordTemplate;
+use Charcoal\Admin\Template\Account\LostPasswordTemplate;
 
 /**
  *

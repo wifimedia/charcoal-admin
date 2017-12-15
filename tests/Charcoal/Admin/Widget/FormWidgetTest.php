@@ -1,6 +1,6 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Widget;
+namespace Charcoal\Tests\Admin\Widget;
 
 use PHPUnit_Framework_TestCase;
 

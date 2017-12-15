@@ -53,7 +53,7 @@ class LogoutTemplate extends AdminTemplate
      *
      * @return boolean
      */
-    protected function authRequired()
+    public function authRequired()
     {
         return false;
     }

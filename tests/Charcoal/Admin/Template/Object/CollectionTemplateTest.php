@@ -1,18 +1,18 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Template\Object;
+namespace Charcoal\Tests\Admin\Template\Object;
 
-use \ReflectionClass;
+use ReflectionClass;
 
 // From PHPUnit
-use \PHPUnit_Framework_TestCase;
+use PHPUnit_Framework_TestCase;
 
 // From Pimple
-use \Pimple\Container;
+use Pimple\Container;
 
 // From 'charcoal-admin'
-use \Charcoal\Admin\Template\Object\CollectionTemplate;
-use \Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Admin\Template\Object\CollectionTemplate;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 /**
  *

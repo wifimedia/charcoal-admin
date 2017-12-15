@@ -1,6 +1,6 @@
 <?php
 //
-//namespace Charcoal\Admin\Tests\Widget;
+//namespace Charcoal\Tests\Admin\Widget;
 //
 //use PHPUnit_Framework_TestCase;
 //
@@ -10,7 +10,7 @@
 //
 //use \Charcoal\Admin\Widget\MapWidget;
 //
-//use Charcoal\Admin\Tests\ContainerProvider;
+//use Charcoal\Tests\Admin\ContainerProvider;
 //
 //class MapWidgetTest extends PHPUnit_Framework_TestCase
 //{

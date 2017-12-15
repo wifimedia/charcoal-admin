@@ -18,7 +18,7 @@ trait SecurityTrait
      *
      * @return boolean
      */
-    protected function authRequired()
+    public function authRequired()
     {
         return true;
     }

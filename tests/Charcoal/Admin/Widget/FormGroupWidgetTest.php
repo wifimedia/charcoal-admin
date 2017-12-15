@@ -1,16 +1,16 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Widget;
+namespace Charcoal\Tests\Admin\Widget;
 
 use PHPUnit_Framework_TestCase;
 
-use \Psr\Log\NullLogger;
+use Psr\Log\NullLogger;
 
 use Pimple\Container;
 
-use \Charcoal\Admin\Widget\FormGroupWidget;
+use Charcoal\Admin\Widget\FormGroupWidget;
 
-use Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 class FormGroupWidgetTest extends PHPUnit_Framework_TestCase
 {

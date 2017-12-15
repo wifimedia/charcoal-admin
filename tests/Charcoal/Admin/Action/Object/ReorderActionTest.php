@@ -1,31 +1,17 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Action\Object;
-
-// From PHPUnit
-use \PHPUnit_Framework_TestCase;
-
-// From Pimple
-use \Pimple\Container;
-
-// From Slim
-use \Slim\Http\Environment;
-use \Slim\Http\Request;
-use \Slim\Http\Response;
+namespace Charcoal\Tests\Admin\Action\Object;
 
 // From 'charcoal-core'
-use \Charcoal\Loader\CollectionLoader;
-use \Charcoal\Model\Collection;
+use Charcoal\Loader\CollectionLoader;
+use Charcoal\Model\Collection;
 
 // From 'charcoal-admin'
-use \Charcoal\Admin\Action\Object\ReorderAction;
-use \Charcoal\Admin\Tests\ContainerProvider;
-use \Charcoal\Admin\Tests\Mock\SortableModel as Model;
+use Charcoal\Admin\Action\Object\ReorderAction;
+use Charcoal\Tests\Admin\Action\AbstractActionTestCase;
+use Charcoal\Tests\Admin\Mock\SortableModel as Model;
 
-/**
- *
- */
-class ReorderActionTest extends PHPUnit_Framework_TestCase
+class ReorderActionTest extends AbstractActionTestCase
 {
     /**
      * The primary model to test with.
@@ -35,13 +21,6 @@ class ReorderActionTest extends PHPUnit_Framework_TestCase
     private $model = Model::class;
 
     /**
-     * Store the tested instance.
-     *
-     * @var ReorderAction
-     */
-    private $action;
-
-    /**
      * Store the object collection loader.
      *
      * @var CollectionLoader
@@ -49,30 +28,64 @@ class ReorderActionTest extends PHPUnit_Framework_TestCase
     private $collectionLoader;
 
     /**
-     * Store the service container.
-     *
-     * @var Container
+     * @covers \Charcoal\Admin\Action\Object\ReorderAction::authRequired
      */
-    private $container;
+    public function testAuthRequired()
+    {
+        $action = $this->createTestAction();
+        $this->assertTrue($action->authRequired());
+    }
 
     /**
-     * Set up the test.
+     * @dataProvider runRequestProvider
+     *
+     * @param integer $status  An HTTP status code.
+     * @param string  $success Whether the action was successful.
+     * @param array   $mock    The request parameters to test.
      */
-    public function setUp()
+    public function testRun($status, $success, array $mock)
     {
-        $container = $this->container();
-        $containerProvider = new ContainerProvider();
-        $containerProvider->registerActionDependencies($container);
+        if ($status === 200) {
+            $this->setUpObjects();
+        }
 
-        $this->action = new ReorderAction([
-            'logger'    => $container['logger'],
-            'container' => $container
-        ]);
+        $action   = $this->createTestAction();
+        $request  = $this->createTestRequest($mock);
+        $response = $this->createTestResponse();
+
+        $response = $action->run($request, $response);
+        $this->assertEquals($status, $response->getStatusCode());
+
+        $results = $action->results();
+        $this->assertEquals($success, $results['success']);
+
+        if ($status === 200) {
+            $keys = $this->getObjects()->keys();
+            $this->assertEquals([ 'baz', 'bar', 'qux', 'foo' ], $keys);
+        }
+    }
+
+    /**
+     * Provide HTTP request data.
+     *
+     * @used-by self::testRun()
+     * @return  array
+     */
+    public function runRequestProvider()
+    {
+        return [
+            [ 400, false, [] ],
+            [ 400, false, [ 'QUERY_STRING' => 'obj_type='.$this->model ] ],
+            [ 400, false, [ 'QUERY_STRING' => 'obj_type='.$this->model.'&order_property=5' ] ],
+            [ 400, false, [ 'QUERY_STRING' => 'obj_type='.$this->model.'&order_property=foobar' ] ],
+            [ 500, false, [ 'QUERY_STRING' => 'obj_type='.$this->model.'&obj_orders[]=xyzzy&obj_orders[]=qwerty' ] ],
+            [ 200, true,  [ 'QUERY_STRING' => 'obj_type='.$this->model.'&obj_orders[]=baz&obj_orders[]=bar&obj_orders[]=qux&obj_orders[]=foo' ] ],
+        ];
     }
 
     public function setUpObjects()
     {
-        $container = $this->container();
+        $container = $this->getContainer();
 
         $model  = $container['model/factory']->create($this->model);
         $source = $model->source();
@@ -101,7 +114,7 @@ class ReorderActionTest extends PHPUnit_Framework_TestCase
     public function getObjects()
     {
         if ($this->collectionLoader === null) {
-            $container = $this->container();
+            $container = $this->getContainer();
 
             $loader = new CollectionLoader([
                 'logger'     => $container['logger'],
@@ -118,67 +131,17 @@ class ReorderActionTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Create Admin Action for testing.
      *
+     * @return ReorderAction
      */
-    public function testAuthRequiredIsTrue()
+    final protected function createTestAction()
     {
-        $this->assertTrue($this->action->authRequired());
-    }
+        $container = $this->getContainer();
 
-    /**
-     * @dataProvider runRequestProvider
-     *
-     * @param integer $status  An HTTP status code.
-     * @param string  $success Whether the action was successful.
-     * @param array   $mock    The request parameters to test.
-     */
-    public function testRun($status, $success, array $mock)
-    {
-        if ($status === 200) {
-            $this->setUpObjects();
-        }
-
-        $request  = Request::createFromEnvironment(Environment::mock($mock));
-        $response = new Response();
-
-        $response = $this->action->run($request, $response);
-        $this->assertEquals($status, $response->getStatusCode());
-
-        $results = $this->action->results();
-        $this->assertEquals($success, $results['success']);
-
-        if ($status === 200) {
-            $keys = $this->getObjects()->keys();
-            $this->assertEquals([ 'baz', 'bar', 'qux', 'foo' ], $keys);
-        }
-    }
-
-    public function runRequestProvider()
-    {
-        return [
-            [ 400, false, [] ],
-            [ 400, false, [ 'QUERY_STRING' => 'obj_type='.$this->model ] ],
-            [ 400, false, [ 'QUERY_STRING' => 'obj_type='.$this->model.'&order_property=5' ] ],
-            [ 400, false, [ 'QUERY_STRING' => 'obj_type='.$this->model.'&order_property=foobar' ] ],
-            [ 500, false, [ 'QUERY_STRING' => 'obj_type='.$this->model.'&obj_orders[]=xyzzy&obj_orders[]=qwerty' ] ],
-            [ 200, true,  [ 'QUERY_STRING' => 'obj_type='.$this->model.'&obj_orders[]=baz&obj_orders[]=bar&obj_orders[]=qux&obj_orders[]=foo' ] ],
-        ];
-    }
-
-    /**
-     * Set up the service container.
-     *
-     * @return Container
-     */
-    private function container()
-    {
-        if ($this->container === null) {
-            $container = new Container();
-            $containerProvider = new ContainerProvider();
-            $containerProvider->registerAdminServices($container);
-
-            $this->container = $container;
-        }
-        return $this->container;
+        return new ReorderAction([
+            'logger'    => $container['logger'],
+            'container' => $container
+        ]);
     }
 }

@@ -1,23 +1,23 @@
 <?php
 
-namespace Charcoal\Admin\Tests\Widget;
+namespace Charcoal\Tests\Admin\Widget;
 
 use PHPUnit_Framework_TestCase;
 
 use Pimple\Container;
 
 // From Slim
-use \Slim\Http\Environment;
-use \Slim\Http\Request;
-use \Slim\Http\Response;
+use Slim\Http\Environment;
+use Slim\Http\Request;
+use Slim\Http\Response;
 
-use \Charcoal\Admin\Widget\SidemenuWidget;
+use Charcoal\Admin\Widget\SidemenuWidget;
 
-use Charcoal\Admin\Tests\ContainerProvider;
+use Charcoal\Tests\Admin\ContainerProvider;
 
 /**
  * Class SidemenuWidgetTest
- * @package Charcoal\Admin\Tests\Widget
+ * @package Charcoal\Tests\Admin\Widget
  */
 class SidemenuWidgetTest extends PHPUnit_Framework_TestCase
 {
